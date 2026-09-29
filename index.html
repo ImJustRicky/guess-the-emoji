@@ -53,43 +53,66 @@
   button:disabled { cursor: not-allowed; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .emoji { font-family: var(--font-emoji); font-weight: 400; line-height: 1; }
+  [hidden] { display: none !important; }
 
   /* ---------- Game shell ---------- */
   .game {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 560px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
   }
 
-  .bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .bar h1 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: -0.035em;
-  }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .bar h1 { margin: 0; font-size: 18px; font-weight: 900; letter-spacing: -0.035em; }
   .bar h1 span { color: var(--accent); }
-  .meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--muted); font-weight: 500; }
-  .dots { display: flex; gap: 4px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text); transition: background .25s, transform .25s; }
-  .dot.lost { background: #2a2a31; transform: scale(.8); }
-  .meta .count { font-family: var(--font-mono); color: var(--text); font-weight: 700; }
+  .meta { display: flex; align-items: center; gap: 8px; }
+  .pill {
+    font-size: 12px; font-weight: 500; color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 10px;
+    white-space: nowrap;
+  }
+  .pill b { font-family: var(--font-mono); color: var(--text); font-weight: 700; }
+  .pill.over b { color: var(--no); }
 
-  /* ---------- Mystery ---------- */
-  .stage { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0 0; }
+  /* ---------- Emoji cloud ---------- */
+  .cloud {
+    position: relative;
+    width: 100%;
+    height: 220px;
+  }
+  .float {
+    position: absolute;
+    transform: translate(-50%, -50%) scale(1);
+    transition: opacity .6s ease, transform .6s cubic-bezier(.2, 1, .3, 1);
+    opacity: var(--o, .4);
+    pointer-events: none;
+  }
+  .float.enter { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
+  .float.out { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(-25deg); }
+  .float .emoji {
+    display: block;
+    font-size: var(--s, 30px);
+    filter: saturate(.75);
+    animation: bob var(--d, 4s) ease-in-out var(--delay, 0s) infinite alternate;
+  }
+  .mystery-wrap {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+  }
   .mystery {
     position: relative;
-    width: 108px; height: 108px;
+    width: 100px; height: 100px;
     border-radius: 26px;
     background: var(--tile);
-    box-shadow: inset 0 0 0 1px var(--border-strong), 0 20px 50px -20px rgba(0, 0, 0, 0.9);
+    box-shadow: inset 0 0 0 1px var(--border-strong), 0 20px 50px -18px rgba(0, 0, 0, 0.95);
     display: grid; place-items: center;
     overflow: hidden;
   }
@@ -101,19 +124,29 @@
     animation: shimmer 3.4s ease-in-out infinite;
     pointer-events: none;
   }
-  .mystery .q { font-size: 52px; font-weight: 900; color: #34343c; }
-  .mystery .emoji { font-size: 62px; animation: pop .55s cubic-bezier(.2, 1.4, .4, 1); }
-  .mystery.won { box-shadow: inset 0 0 0 2px var(--accent), 0 0 60px -12px rgba(232, 163, 61, 0.45); }
-  .mystery.lost { box-shadow: inset 0 0 0 2px var(--no), 0 0 60px -16px rgba(248, 113, 113, 0.4); }
-  .mystery.won::after, .mystery.lost::after { display: none; }
+  .mystery .q { font-size: 48px; font-weight: 900; color: #34343c; }
+  .mystery .emoji { font-size: 58px; animation: pop .55s cubic-bezier(.2, 1.4, .4, 1); }
+  .mystery.win { box-shadow: inset 0 0 0 2px var(--accent), 0 0 60px -10px rgba(232, 163, 61, 0.5); }
+  .mystery.over { box-shadow: inset 0 0 0 2px var(--muted), 0 0 50px -16px rgba(236, 236, 241, 0.25); }
+  .mystery.win::after, .mystery.over::after { display: none; }
   .mystery.shake { animation: shake .42s ease; }
-  .caption { margin: 0; font-size: 14px; color: var(--muted); font-weight: 500; text-align: center; }
-  .caption b { color: var(--text); font-weight: 800; }
+
+  .left {
+    margin: -6px 0 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .left.over { color: var(--no); }
+  .left.done { color: var(--muted); font-weight: 500; }
+  .left b { color: var(--text); font-weight: 800; }
+  .left .gold { color: var(--accent); }
 
   /* ---------- Log ---------- */
   .log {
     display: flex; flex-direction: column; gap: 2px;
-    max-height: 250px;
+    max-height: 230px;
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #2a2a31 transparent;
@@ -130,6 +163,7 @@
     animation: rowIn .22s ease;
   }
   .row:nth-child(odd) { background: rgba(255, 255, 255, 0.022); }
+  .row.past-par .num { color: var(--no); }
   .num { font-family: var(--font-mono); font-size: 11.5px; color: var(--dim); text-align: right; }
   .chip {
     font-family: var(--font-mono);
@@ -148,6 +182,16 @@
   .ans.yes { color: var(--yes); }
   .ans.no { color: var(--no); }
   .ans.maybe { color: var(--maybe); }
+  .par-line {
+    display: flex; align-items: center; gap: 10px;
+    padding: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--no);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .par-line::before, .par-line::after { content: ""; flex: 1; height: 1px; background: rgba(248, 113, 113, 0.25); }
 
   /* ---------- Input ---------- */
   .field { position: relative; }
@@ -192,7 +236,6 @@
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
     z-index: 5;
   }
-  .suggest[hidden] { display: none; }
   .suggest-note { font-size: 11px; color: var(--dim); padding: 4px 10px 2px; font-weight: 500; }
   .suggest-item {
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
@@ -203,8 +246,12 @@
   }
   .suggest-item:hover, .suggest-item[aria-selected="true"] { background: var(--tile); }
   .suggest-item small { color: var(--dim); font-size: 12px; font-weight: 500; white-space: nowrap; }
+  .suggest-item .opt { display: flex; align-items: center; gap: 10px; }
+  .suggest-item .opt .emoji { font-size: 20px; }
+  .suggest-item.tried { opacity: .45; }
+  .suggest-item.tried small { color: var(--no); }
 
-  .message { min-height: 18px; margin: -10px 0 -6px; font-size: 13px; color: var(--muted); text-align: center; font-weight: 500; }
+  .message { min-height: 18px; margin: -8px 0 -4px; font-size: 13px; color: var(--muted); text-align: center; font-weight: 500; }
 
   /* ---------- Buttons ---------- */
   .actions { display: flex; gap: 10px; }
@@ -244,8 +291,30 @@
   .tile:hover { background: var(--tile-hover); transform: translateY(-2px); }
   .tile.selected { box-shadow: inset 0 0 0 2px var(--accent); background: var(--surface); }
 
-  [hidden] { display: none !important; }
+  /* ---------- Emoji shower ---------- */
+  .shower {
+    position: fixed;
+    top: 0;
+    z-index: 0;
+    pointer-events: none;
+    font-family: var(--font-emoji);
+    line-height: 1;
+    opacity: 0;
+    will-change: transform, opacity;
+    animation: showerFall var(--dur, 3.4s) cubic-bezier(.35, .1, .55, 1) forwards;
+  }
+  .shower.burst { z-index: 10; }
 
+  @keyframes showerFall {
+    0% { opacity: 0; transform: translate3d(0, -40px, 0) rotate(0deg); }
+    12% { opacity: var(--o, .6); }
+    80% { opacity: var(--o, .6); }
+    100% { opacity: 0; transform: translate3d(var(--drift, 0px), calc(100vh + 40px), 0) rotate(var(--rot, 90deg)); }
+  }
+  @keyframes bob {
+    from { transform: translateY(-4px) rotate(-4deg); }
+    to { transform: translateY(4px) rotate(4deg); }
+  }
   @keyframes shimmer { 0%, 30% { transform: translateX(-100%); } 70%, 100% { transform: translateX(100%); } }
   @keyframes pop { 0% { transform: scale(.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   @keyframes shake {
@@ -254,17 +323,22 @@
     60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
   }
   @keyframes rowIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    .shower { display: none; }
   }
 
   @media (max-width: 480px) {
     body { place-items: start center; padding-top: 20px; }
+    .cloud { height: 200px; }
+    .mystery { width: 88px; height: 88px; border-radius: 22px; }
+    .mystery .emoji { font-size: 50px; }
     .bank { grid-template-columns: repeat(2, 1fr); }
     .row { grid-template-columns: 16px auto 1fr auto; gap: 8px; padding: 7px 8px; font-size: 13.5px; }
-    .log { max-height: 210px; }
+    .log { max-height: 200px; }
     .btn { font-size: 14px; padding: 0 10px; }
-    .meta .label { display: none; }
+    .pill.best { display: none; }
   }
 </style>
 </head>
@@ -274,14 +348,18 @@
   <div class="bar">
     <h1>Guess the <span>Emoji</span></h1>
     <div class="meta">
-      <span class="dots" id="lives" aria-label="Lives"></span>
-      <span><span class="count" id="qLeft">20</span> <span class="label">questions</span> left</span>
+      <span class="pill best" id="bestPill" hidden>Best <b id="best">0</b></span>
+      <span class="pill" id="stepPill">Step <b id="steps">0</b> / <b id="par">15</b></span>
     </div>
   </div>
 
-  <section class="stage">
-    <div class="mystery" id="mystery" aria-live="polite"><span class="q">?</span></div>
-    <p class="caption" id="caption">Ask yes/no questions, then guess the emoji.</p>
+  <section>
+    <div class="cloud" id="cloud">
+      <div class="mystery-wrap">
+        <div class="mystery" id="mystery" aria-live="polite"><span class="q">?</span></div>
+      </div>
+    </div>
+    <p class="left" id="left">15 left</p>
   </section>
 
   <div class="log" id="log" aria-live="polite"></div>
@@ -319,9 +397,11 @@
 (() => {
   'use strict';
 
-  const MAX_QUESTIONS = 20;
-  const MAX_LIVES = 5;
+  const PAR = 15;          // beat the emoji in this many steps (questions + guesses)
   const BANK_SIZE = 6;
+  const CLOUD_MAX = 16;    // most candidate emojis floating around the tile at once
+  const SHOWER_MAX = 40;   // most falling emojis on screen at once
+  const BEST_KEY = 'gte:best';
 
   /* Question bank: [id, question, keywords, tier]  (tier 1 broad → 3 specific) */
   const QUESTION_DEFS = [
@@ -509,6 +589,8 @@
   const compactName = (str) => words(str).filter((w) => !ARTICLES.has(w)).map(stem).join('');
   const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const titleCase = (s) => s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+  const rand = (min, max) => min + Math.random() * (max - min);
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
   function levenshtein(a, b) {
     if (a === b) return 0;
@@ -534,6 +616,13 @@
     return a;
   }
 
+  function loadBest() {
+    try { const v = Number(localStorage.getItem(BEST_KEY)); return v > 0 ? v : null; } catch (_) { return null; }
+  }
+  function saveBest(v) {
+    try { localStorage.setItem(BEST_KEY, String(v)); } catch (_) { /* storage unavailable */ }
+  }
+
   /* ---------- Data ---------- */
   const QUESTIONS = QUESTION_DEFS.map(([id, text, kws, tier], order) => ({
     id, text, tier, order,
@@ -549,7 +638,7 @@
     yesSet.forEach((t) => maybeSet.delete(t));
     const names = [name].concat(aliases ? aliases.split('|') : []);
     const keys = Array.from(new Set(names.map(compactName).filter(Boolean)));
-    return { index, char, name, keys, yes: yesSet, maybe: maybeSet };
+    return { index, char, name, names, keys, yes: yesSet, maybe: maybeSet };
   });
 
   const NAME_INDEX = new Map();
@@ -602,15 +691,45 @@
     return null;
   }
 
-  function isCorrectGuess(target, text) {
-    const key = compactName(text);
-    if (!key) return false;
-    if (target.keys.includes(key)) return true;
-    if (NAME_INDEX.has(key) && NAME_INDEX.get(key) !== target.index) return false;
-    return target.keys.some((k) => {
+  // Resolve typed text to exactly one emoji: exact name/alias first, then a single close typo match.
+  function resolveEmoji(text) {
+    const key = compactName(stripGuessPrefix(text));
+    if (!key) return -1;
+    if (NAME_INDEX.has(key)) return NAME_INDEX.get(key);
+    const close = new Set();
+    EMOJIS.forEach((e) => e.keys.forEach((k) => {
       const allowed = k.length >= 9 ? 2 : k.length >= 5 ? 1 : 0;
-      return allowed > 0 && Math.abs(k.length - key.length) <= allowed && levenshtein(k, key) <= allowed;
+      if (allowed > 0 && Math.abs(k.length - key.length) <= allowed && levenshtein(k, key) <= allowed) close.add(e.index);
+    }));
+    return close.size === 1 ? Array.from(close)[0] : -1;
+  }
+
+  // Autocomplete for guess(): every emoji in the game, matched by name or alias.
+  function searchEmojis(text, limit = 6) {
+    const qWords = words(stripGuessPrefix(text)).filter((w) => !ARTICLES.has(w));
+    const qc = qWords.join('');
+    if (!qc) return [];
+    const hits = new Map();
+    EMOJIS.forEach((e) => {
+      e.names.forEach((n, ni) => {
+        const nw = words(n).filter((w) => !ARTICLES.has(w));
+        const nc = nw.join('');
+        let score = 0;
+        if (nc === qc) score = 100;
+        else if (nc.startsWith(qc)) score = 80;
+        else if (qWords.length === 1 && nw.some((w) => w.startsWith(qc))) score = 60;
+        else if (qc.length >= 3 && nc.includes(qc)) score = 40;
+        else if (qc.length >= 4 && levenshtein(nc.slice(0, qc.length), qc) <= 1) score = 20;
+        if (!score) return;
+        if (ni === 0) score += 5;
+        const prev = hits.get(e.index);
+        if (!prev || prev.score < score) hits.set(e.index, { score, via: ni === 0 ? null : n });
+      });
     });
+    return Array.from(hits.entries())
+      .sort((a, b) => b[1].score - a[1].score || EMOJIS[a[0]].name.localeCompare(EMOJIS[b[0]].name))
+      .slice(0, limit)
+      .map(([idx, h]) => ({ idx, via: h.via }));
   }
 
   /* ---------- State ---------- */
@@ -618,18 +737,29 @@
   let bank = [];
   let selected = null;
   let suggestIds = [];
+  let suggestKind = 'question';
   let suggestActive = -1;
   let lastIdx = -1;
+  let best = loadBest();
 
   function newGame() {
     let idx;
     do { idx = Math.floor(Math.random() * EMOJIS.length); } while (idx === lastIdx && EMOJIS.length > 1);
     lastIdx = idx;
-    state = { idx, log: [], lives: MAX_LIVES, used: 0, wrong: [], status: 'playing', mode: 'ask' };
+    state = {
+      idx,
+      log: [],
+      steps: 0,
+      wrong: [],
+      status: 'playing',
+      mode: 'ask',
+      cloudOrder: shuffled(EMOJIS.map((e) => e.index))
+    };
     input.value = '';
     selected = null;
-    setMessage('');
+    setMessage(`Ask yes/no questions, then guess — beat it in ${PAR} steps.`);
     closeSuggest();
+    resetCloud();
     dealBank();
     render();
     input.focus();
@@ -639,13 +769,12 @@
   const playing = () => state.status === 'playing';
   const askedIds = () => new Set(state.log.filter((e) => e.q).map((e) => e.q));
 
-  /* ---------- Question bank ---------- */
   function candidates() {
     const answered = state.log.filter((e) => e.q);
-    const wrong = new Set(state.wrong);
-    return EMOJIS.filter((e) => !e.keys.some((k) => wrong.has(k)) && answered.every((a) => answerFor(e, a.q) === a.a));
+    return EMOJIS.filter((e) => !state.wrong.includes(e.index) && answered.every((a) => answerFor(e, a.q) === a.a));
   }
 
+  /* ---------- Question bank ---------- */
   function entropy(cands, qid) {
     const counts = { Yes: 0, No: 0, Sometimes: 0 };
     cands.forEach((e) => { counts[answerFor(e, qid)]++; });
@@ -677,59 +806,50 @@
       setMessage(`Already asked — the answer was ${state.log.find((e) => e.q === qid).a}.`);
       return;
     }
-    if (state.used >= MAX_QUESTIONS) {
-      setMessage('No questions left — make your guess.');
-      setMode('guess');
-      return;
-    }
-    state.log.push({ q: qid, a: answerFor(target(), qid) });
-    state.used++;
+    state.steps++;
+    state.log.push({ q: qid, a: answerFor(target(), qid), step: state.steps });
     input.value = '';
     closeSuggest();
-    if (state.used >= MAX_QUESTIONS) {
-      state.mode = 'guess';
-      setMessage('That was your last question — time to guess.');
-    } else {
-      setMessage('');
-    }
+    setMessage(parMessage());
     dealBank();
     render();
   }
 
-  function guess(text) {
+  function guess(idx) {
     if (!playing()) return;
-    const cleaned = stripGuessPrefix(text);
-    const key = compactName(cleaned);
-    if (!key) { setMessage('Type the name of an emoji.'); return; }
-    if (state.wrong.includes(key)) { setMessage('You already guessed that.'); return; }
+    const e = EMOJIS[idx];
+    if (state.wrong.includes(idx)) { setMessage(`You already guessed ${e.name}.`); return; }
 
     const t = target();
-    const ok = isCorrectGuess(t, cleaned);
-    const known = NAME_INDEX.has(key) ? EMOJIS[NAME_INDEX.get(key)] : null;
-    state.log.push({
-      guess: ok ? t.name : known ? known.name : titleCase(cleaned),
-      char: ok ? t.char : known ? known.char : '',
-      ok
-    });
+    const ok = idx === t.index;
+    state.steps++;
+    state.log.push({ guess: e.name, char: e.char, ok, step: state.steps });
     input.value = '';
     closeSuggest();
 
     if (ok) {
-      state.status = 'won';
-      setMessage('');
-    } else {
-      state.wrong.push(key);
-      state.lives--;
-      shake();
-      if (state.lives <= 0) {
-        state.status = 'lost';
-        setMessage('');
-      } else {
-        setMessage(state.lives === 1 ? 'Nope — last life.' : `Nope — ${state.lives} lives left.`);
-        dealBank();
+      state.status = state.steps <= PAR ? 'won' : 'solved';
+      if (state.status === 'won' && (best === null || state.steps < best)) {
+        best = state.steps;
+        state.newBest = true;
+        saveBest(best);
       }
+      setMessage('');
+      celebrate(t.char, state.status === 'won');
+    } else {
+      state.wrong.push(idx);
+      shake();
+      setMessage(`Nope. ${parMessage()}`);
+      dealBank();
     }
     render();
+  }
+
+  function parMessage() {
+    const left = PAR - state.steps;
+    if (left > 0) return '';
+    if (left === 0) return 'That was your last step under par — make it count.';
+    return 'Past par — keep going, but it won’t count as a win.';
   }
 
   function submit() {
@@ -738,20 +858,27 @@
     if (!text) return;
 
     if (state.mode === 'guess') {
-      const questionLike = /\?\s*$/.test(text) && !NAME_INDEX.has(compactName(stripGuessPrefix(text)));
-      const ranked = questionLike ? rankQuestions(text) : [];
-      if (ranked.length && ranked[0].score >= 1) {
-        setMessage('That looks like a question — switch to ask().');
+      if (suggestKind === 'emoji' && suggestActive >= 0 && suggestIds[suggestActive] !== undefined) {
+        guess(suggestIds[suggestActive]);
         return;
       }
-      guess(text);
+      const idx = resolveEmoji(text);
+      if (idx >= 0) { guess(idx); return; }
+      const hits = searchEmojis(text);
+      if (hits.length === 1) { guess(hits[0].idx); return; }
+      const ranked = /\?\s*$/.test(text) ? rankQuestions(text) : [];
+      if (ranked.length && ranked[0].score >= 1) setMessage('That looks like a question — switch to ask().');
+      else setMessage(hits.length ? 'Pick one of the emojis from the list.' : 'That’s not an emoji in this game — pick one from the list.');
       return;
     }
 
-    if (suggestActive >= 0 && suggestIds[suggestActive]) { ask(suggestIds[suggestActive]); return; }
+    if (suggestKind === 'question' && suggestActive >= 0 && suggestIds[suggestActive]) { ask(suggestIds[suggestActive]); return; }
 
     const g = detectGuess(text);
-    if (g) { guess(g); return; }
+    if (g) {
+      const idx = resolveEmoji(g);
+      if (idx >= 0) { guess(idx); return; }
+    }
 
     const ranked = rankQuestions(text);
     if (ranked.length && ranked[0].score >= 1) ask(ranked[0].q.id);
@@ -760,10 +887,6 @@
 
   function setMode(mode) {
     if (!playing()) return;
-    if (mode === 'ask' && state.used >= MAX_QUESTIONS) {
-      setMessage('No questions left — make your guess.');
-      mode = 'guess';
-    }
     state.mode = mode;
     selected = null;
     closeSuggest();
@@ -784,6 +907,8 @@
   const $ = (id) => document.getElementById(id);
   const input = $('input');
   const suggestEl = $('suggest');
+  const cloudEl = $('cloud');
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function setMessage(text) { $('message').textContent = text; }
 
@@ -794,41 +919,161 @@
     m.classList.add('shake');
   }
 
+  /* ---------- Candidate cloud ---------- */
+  // Fixed spots scattered around the centre tile, in % of the cloud box.
+  const SLOTS = (() => {
+    const W = 520, H = 220, TILE = 70, MIN_GAP = 52;
+    const pts = [];
+    let tries = 0;
+    while (pts.length < CLOUD_MAX && tries < 4000) {
+      tries++;
+      const x = rand(24, W - 24);
+      const y = rand(22, H - 22);
+      const dx = (x - W / 2) / (W / 2);
+      const dy = (y - H / 2) / (H / 2);
+      if (Math.abs(x - W / 2) < TILE + 18 && Math.abs(y - H / 2) < TILE) continue;
+      if (dx * dx + dy * dy > 1.05) continue;
+      if (pts.some((p) => Math.hypot(p.x - x, p.y - y) < MIN_GAP)) continue;
+      pts.push({ x, y });
+    }
+    return pts.map((p) => ({ left: (p.x / W) * 100, top: (p.y / H) * 100 }));
+  })();
+
+  const floats = new Map(); // emoji index -> { el, slot }
+
+  function resetCloud() {
+    floats.forEach(({ el }) => el.remove());
+    floats.clear();
+  }
+
+  function renderCloud() {
+    const showing = new Set();
+    if (playing()) {
+      const cands = new Set(candidates().map((e) => e.index));
+      const order = state.cloudOrder.filter((i) => cands.has(i));
+      // Keep emojis that are already floating first so they don't jump around.
+      const keep = order.filter((i) => floats.has(i));
+      const fresh = order.filter((i) => !floats.has(i));
+      keep.concat(fresh).slice(0, Math.min(CLOUD_MAX, SLOTS.length)).forEach((i) => showing.add(i));
+    }
+
+    floats.forEach((f, i) => {
+      if (showing.has(i)) return;
+      floats.delete(i);
+      f.el.classList.add('out');
+      setTimeout(() => f.el.remove(), 650);
+    });
+
+    const used = new Set(Array.from(floats.values()).map((f) => f.slot));
+    const free = shuffled(SLOTS.map((_, k) => k).filter((k) => !used.has(k)));
+    showing.forEach((i) => {
+      if (floats.has(i)) return;
+      const slot = free.shift();
+      if (slot === undefined) return;
+      const el = document.createElement('span');
+      el.className = 'float enter';
+      el.style.left = SLOTS[slot].left + '%';
+      el.style.top = SLOTS[slot].top + '%';
+      el.style.setProperty('--o', rand(0.28, 0.55).toFixed(2));
+      el.style.setProperty('--s', Math.round(rand(24, 36)) + 'px');
+      el.style.setProperty('--d', rand(2.8, 4.8).toFixed(2) + 's');
+      el.style.setProperty('--delay', (-rand(0, 4)).toFixed(2) + 's');
+      el.innerHTML = `<span class="emoji">${EMOJIS[i].char}</span>`;
+      cloudEl.insertBefore(el, cloudEl.firstChild);
+      floats.set(i, { el, slot });
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('enter')));
+    });
+  }
+
+  /* ---------- Emoji shower ---------- */
+  let showerCount = 0;
+  let lastDrop = 0;
+
+  function drop(char, { burst = false } = {}) {
+    if (reduceMotion || showerCount >= (burst ? SHOWER_MAX + 30 : SHOWER_MAX)) return;
+    const el = document.createElement('span');
+    el.className = 'shower' + (burst ? ' burst' : '');
+    el.textContent = char;
+    el.style.left = rand(0, 100) + 'vw';
+    el.style.fontSize = Math.round(burst ? rand(22, 40) : rand(14, 26)) + 'px';
+    el.style.setProperty('--o', (burst ? rand(0.75, 1) : rand(0.25, 0.55)).toFixed(2));
+    el.style.setProperty('--dur', (burst ? rand(1.8, 3) : rand(3, 5)).toFixed(2) + 's');
+    el.style.setProperty('--drift', Math.round(rand(-60, 60)) + 'px');
+    el.style.setProperty('--rot', Math.round(rand(-200, 200)) + 'deg');
+    if (burst) el.style.animationDelay = rand(0, 0.6).toFixed(2) + 's';
+    showerCount++;
+    el.addEventListener('animationend', () => { el.remove(); showerCount--; }, { once: true });
+    document.body.appendChild(el);
+  }
+
+  function sprinkle() {
+    const now = performance.now();
+    if (now - lastDrop < 70) return;
+    lastDrop = now;
+    const pool = playing() ? candidates() : EMOJIS;
+    const src = pool.length ? pool : EMOJIS;
+    drop(src[Math.floor(Math.random() * src.length)].char);
+  }
+
+  function celebrate(char, isWin) {
+    const pieces = isWin ? [char, char, char, '✨', '🎉'] : [char, '✨'];
+    const count = isWin ? 36 : 14;
+    for (let i = 0; i < count; i++) drop(pieces[i % pieces.length], { burst: true });
+  }
+
+  /* ---------- Render ---------- */
   function render() {
     const t = target();
     const active = playing();
+    const left = PAR - state.steps;
 
-    // Lives + counter
-    $('lives').innerHTML = Array.from({ length: MAX_LIVES }, (_, i) => `<span class="dot${i >= state.lives ? ' lost' : ''}"></span>`).join('');
-    $('lives').setAttribute('aria-label', `${state.lives} of ${MAX_LIVES} lives left`);
-    $('qLeft').textContent = MAX_QUESTIONS - state.used;
+    // Step pill
+    $('steps').textContent = state.steps;
+    $('par').textContent = PAR;
+    $('stepPill').classList.toggle('over', state.steps > PAR);
+    $('bestPill').hidden = best === null;
+    $('best').textContent = best === null ? '' : best;
 
-    // Mystery tile + caption
+    // Mystery tile
     const mystery = $('mystery');
-    mystery.classList.toggle('won', state.status === 'won');
-    mystery.classList.toggle('lost', state.status === 'lost');
+    mystery.classList.toggle('win', state.status === 'won');
+    mystery.classList.toggle('over', state.status === 'solved');
     mystery.innerHTML = active ? '<span class="q" aria-label="Hidden emoji">?</span>' : `<span class="emoji">${t.char}</span>`;
-    const caption = $('caption');
+
+    // Steps-left line under the cloud
+    const leftEl = $('left');
+    leftEl.className = 'left';
     if (state.status === 'won') {
-      caption.innerHTML = `It was <b>${escapeHtml(t.name)}</b> — solved in ${state.used} question${state.used === 1 ? '' : 's'}.`;
-    } else if (state.status === 'lost') {
-      caption.innerHTML = `Out of lives. It was <b>${escapeHtml(t.name)}</b>.`;
-    } else if (!state.log.length) {
-      caption.textContent = 'Ask yes/no questions, then guess the emoji.';
+      const under = PAR - state.steps;
+      leftEl.innerHTML = `<b>${escapeHtml(t.name)}</b> in ${plural(state.steps, 'step')} · <span class="gold">${under === 0 ? 'right on par' : `${under} under par`}</span>${state.newBest ? ' · new best!' : ''}`;
+      leftEl.classList.add('done');
+    } else if (state.status === 'solved') {
+      leftEl.innerHTML = `<b>${escapeHtml(t.name)}</b> in ${plural(state.steps, 'step')} · ${state.steps - PAR} over par — no win this time`;
+      leftEl.classList.add('done');
+    } else if (left >= 0) {
+      leftEl.textContent = `${left} left`;
     } else {
-      caption.textContent = state.used >= MAX_QUESTIONS ? 'No questions left — make your guess.' : 'What’s the emoji?';
+      leftEl.textContent = `${-left} over par`;
+      leftEl.classList.add('over');
     }
 
-    // Log
+    renderCloud();
+
+    // Log (with a marker where par was crossed)
     const log = $('log');
-    log.innerHTML = state.log.map((e, i) => {
+    let html = '';
+    state.log.forEach((e, i) => {
+      if (e.step === PAR + 1) html += '<div class="par-line">par</div>';
+      const past = e.step > PAR ? ' past-par' : '';
       if (e.q) {
         const cls = e.a === 'Yes' ? 'yes' : e.a === 'No' ? 'no' : 'maybe';
-        return `<div class="row"><span class="num">${i + 1}</span><span class="chip">ask()</span><span class="text">${escapeHtml(QUESTION_BY_ID[e.q].text)}</span><span class="ans ${cls}">${e.a}</span></div>`;
+        html += `<div class="row${past}"><span class="num">${i + 1}</span><span class="chip">ask()</span><span class="text">${escapeHtml(QUESTION_BY_ID[e.q].text)}</span><span class="ans ${cls}">${e.a}</span></div>`;
+      } else {
+        const icon = e.char ? `<span class="emoji">${e.char}</span>` : '';
+        html += `<div class="row${past}"><span class="num">${i + 1}</span><span class="chip guess">guess()</span><span class="text">${icon}${escapeHtml(e.guess)}?</span><span class="ans ${e.ok ? 'yes' : 'no'}">${e.ok ? 'Yes' : 'No'}</span></div>`;
       }
-      const icon = e.char ? `<span class="emoji">${e.char}</span>` : '';
-      return `<div class="row"><span class="num">${i + 1}</span><span class="chip guess">guess()</span><span class="text">${icon}${escapeHtml(e.guess)}?</span><span class="ans ${e.ok ? 'yes' : 'no'}">${e.ok ? 'Yes' : 'No'}</span></div>`;
-    }).join('');
+    });
+    log.innerHTML = html;
     requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
 
     // Input + buttons
@@ -838,15 +1083,15 @@
     const chip = $('modeChip');
     chip.dataset.mode = state.mode;
     chip.textContent = state.mode === 'ask' ? 'ask()' : 'guess()';
-    input.placeholder = state.mode === 'ask' ? 'Ask a yes/no question…' : 'Name the emoji…';
+    input.placeholder = state.mode === 'ask' ? 'Ask a yes/no question…' : 'Start typing an emoji name…';
     $('modeBtnLabel').textContent = state.mode === 'ask' ? 'Guess' : 'Ask';
-    $('shuffleBtn').disabled = state.mode === 'guess' || state.used >= MAX_QUESTIONS;
+    $('shuffleBtn').disabled = state.mode === 'guess';
     $('submitBtn').disabled = !input.value.trim();
 
     // Bank
     const bankEl = $('bank');
     bankEl.innerHTML = '';
-    if (active && state.mode === 'ask' && state.used < MAX_QUESTIONS) {
+    if (active && state.mode === 'ask') {
       bank.forEach((qid) => {
         const b = document.createElement('button');
         b.type = 'button';
@@ -863,7 +1108,31 @@
   /* ---------- Autocomplete ---------- */
   function updateSuggest() {
     const text = input.value.trim();
-    if (!playing() || state.mode !== 'ask' || !text || selected) { closeSuggest(); return; }
+    if (!playing() || !text || selected) { closeSuggest(); return; }
+
+    if (state.mode === 'guess') {
+      const hits = searchEmojis(text);
+      suggestKind = 'emoji';
+      if (!hits.length) {
+        suggestIds = [];
+        suggestActive = -1;
+        suggestEl.innerHTML = '<div class="suggest-note">No emoji by that name — keep typing.</div>';
+        suggestEl.hidden = false;
+        return;
+      }
+      suggestIds = hits.map((h) => h.idx);
+      if (suggestActive < 0 || suggestActive >= suggestIds.length) suggestActive = 0;
+      suggestEl.innerHTML = hits.map((h, i) => {
+        const e = EMOJIS[h.idx];
+        const tried = state.wrong.includes(h.idx);
+        const note = tried ? 'guessed · No' : h.via ? escapeHtml(titleCase(h.via)) : '';
+        return `<button type="button" class="suggest-item${tried ? ' tried' : ''}" role="option" data-i="${i}" aria-selected="${i === suggestActive}"><span class="opt"><span class="emoji">${e.char}</span>${escapeHtml(e.name)}</span>${note ? `<small>${note}</small>` : ''}</button>`;
+      }).join('');
+      suggestEl.hidden = false;
+      return;
+    }
+
+    suggestKind = 'question';
     if (detectGuess(text)) {
       suggestIds = [];
       suggestActive = -1;
@@ -895,15 +1164,18 @@
     const item = ev.target.closest('.suggest-item');
     if (!item) return;
     ev.preventDefault();
-    const qid = suggestIds[Number(item.dataset.i)];
-    if (qid) ask(qid);
+    const id = suggestIds[Number(item.dataset.i)];
+    if (id === undefined) return;
+    if (suggestKind === 'emoji') guess(id);
+    else ask(id);
   });
 
-  input.addEventListener('input', () => {
+  input.addEventListener('input', (ev) => {
     if (selected && input.value !== QUESTION_BY_ID[selected].text) {
       selected = null;
       render();
     }
+    if (ev.inputType && ev.inputType.startsWith('insert')) sprinkle();
     suggestActive = -1;
     $('submitBtn').disabled = !input.value.trim();
     updateSuggest();
@@ -927,7 +1199,7 @@
     }
   });
 
-  input.addEventListener('blur', () => setTimeout(closeSuggest, 120));
+  input.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== input) closeSuggest(); }, 120));
   input.addEventListener('focus', updateSuggest);
 
   $('modeChip').addEventListener('click', () => setMode(state.mode === 'ask' ? 'guess' : 'ask'));
