@@ -47,12 +47,23 @@
     color: var(--text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
   }
-  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
   button:disabled { cursor: not-allowed; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .emoji { font-family: var(--font-emoji); font-weight: 400; line-height: 1; }
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--muted);
+    background: var(--tile);
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 0 5px;
+  }
   [hidden] { display: none !important; }
 
   /* ---------- Game shell ---------- */
@@ -63,7 +74,7 @@
     max-width: 560px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
   }
 
   .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -82,30 +93,48 @@
   .pill.over b { color: var(--no); }
 
   /* ---------- Emoji cloud ---------- */
-  .cloud {
-    position: relative;
-    width: 100%;
-    height: 220px;
-  }
+  .cloud { position: relative; width: 100%; height: 220px; }
   .float {
     position: absolute;
     transform: translate(-50%, -50%) scale(1);
-    transition: opacity .6s ease, transform .6s cubic-bezier(.2, 1, .3, 1);
+    transition: opacity .5s ease, transform .5s cubic-bezier(.2, 1, .3, 1);
     opacity: var(--o, .4);
-    pointer-events: none;
+    padding: 6px;
+    border-radius: 12px;
+    z-index: 1;
   }
-  .float.enter { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
-  .float.out { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(-25deg); }
+  .float:hover, .float:focus-visible { opacity: 1; transform: translate(-50%, -50%) scale(1.25); z-index: 3; }
+  .float::after {
+    content: attr(data-name);
+    position: absolute;
+    left: 50%; top: 100%;
+    transform: translateX(-50%);
+    font: 700 11px var(--font-sans);
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 2px 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+  }
+  .float:hover::after, .float:focus-visible::after { opacity: 1; }
+  .float.enter { opacity: 0; transform: translate(-50%, -50%) scale(.3); pointer-events: none; }
+  .float.out { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(-25deg); pointer-events: none; }
   .float .emoji {
     display: block;
     font-size: var(--s, 30px);
     filter: saturate(.75);
     animation: bob var(--d, 4s) ease-in-out var(--delay, 0s) infinite alternate;
   }
+  .float:hover .emoji { filter: none; }
   .mystery-wrap {
     position: absolute;
     left: 50%; top: 50%;
     transform: translate(-50%, -50%);
+    z-index: 2;
   }
   .mystery {
     position: relative;
@@ -131,13 +160,7 @@
   .mystery.win::after, .mystery.over::after { display: none; }
   .mystery.shake { animation: shake .42s ease; }
 
-  .left {
-    margin: -6px 0 0;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text);
-  }
+  .left { margin: -6px 0 0; text-align: center; font-size: 14px; font-weight: 600; color: var(--text); }
   .left.over { color: var(--no); }
   .left.done { color: var(--muted); font-weight: 500; }
   .left b { color: var(--text); font-weight: 800; }
@@ -160,9 +183,9 @@
     padding: 8px 10px;
     border-radius: 10px;
     font-size: 14px;
-    animation: rowIn .22s ease;
   }
   .row:nth-child(odd) { background: rgba(255, 255, 255, 0.022); }
+  .row.fresh { animation: rowIn .22s ease, fresh 1.4s ease; }
   .row.past-par .num { color: var(--no); }
   .num { font-family: var(--font-mono); font-size: 11.5px; color: var(--dim); text-align: right; }
   .chip {
@@ -197,7 +220,7 @@
   .field { position: relative; }
   .input-box {
     display: flex; align-items: center; gap: 10px;
-    height: 54px;
+    height: 56px;
     padding: 0 8px;
     background: var(--surface);
     border: 1px solid var(--border-strong);
@@ -213,10 +236,12 @@
     background: var(--tile);
     color: var(--muted);
     white-space: nowrap;
+    min-width: 70px;
+    text-align: center;
     transition: background .15s, color .15s;
   }
-  .mode:hover:not(:disabled) { background: var(--tile-hover); }
   .mode[data-mode="guess"] { color: var(--accent); background: var(--accent-soft); }
+  .mode[data-mode="idle"] { color: var(--dim); }
   .input-box input {
     flex: 1; min-width: 0; height: 100%;
     background: transparent; border: 0; outline: 0;
@@ -224,6 +249,19 @@
     font: 600 16px var(--font-sans);
   }
   .input-box input::placeholder { color: var(--dim); font-weight: 500; }
+  .send {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+    background: var(--accent);
+    color: var(--accent-ink);
+    flex: none;
+    transition: background .15s, opacity .15s, transform .08s;
+  }
+  .send:hover:not(:disabled) { background: var(--accent-hover); }
+  .send:active:not(:disabled) { transform: scale(.94); }
+  .send:disabled { background: var(--accent-disabled); color: var(--accent-disabled-ink); }
+  .send svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
   .suggest {
     position: absolute;
@@ -236,22 +274,29 @@
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
     z-index: 5;
   }
-  .suggest-note { font-size: 11px; color: var(--dim); padding: 4px 10px 2px; font-weight: 500; }
+  .suggest-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: var(--dim); font-weight: 600;
+    padding: 6px 10px 2px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+  .suggest-note { font-size: 12px; color: var(--muted); padding: 8px 10px; font-weight: 500; }
   .suggest-item {
     display: flex; justify-content: space-between; align-items: center; gap: 10px;
-    padding: 10px 12px;
+    padding: 9px 12px;
     border-radius: 10px;
     text-align: left;
     font-size: 14.5px; font-weight: 600;
   }
   .suggest-item:hover, .suggest-item[aria-selected="true"] { background: var(--tile); }
+  .suggest-item[aria-selected="true"] { box-shadow: inset 2px 0 0 var(--accent); }
   .suggest-item small { color: var(--dim); font-size: 12px; font-weight: 500; white-space: nowrap; }
   .suggest-item .opt { display: flex; align-items: center; gap: 10px; }
   .suggest-item .opt .emoji { font-size: 20px; }
   .suggest-item.tried { opacity: .45; }
   .suggest-item.tried small { color: var(--no); }
 
-  .message { min-height: 18px; margin: -8px 0 -4px; font-size: 13px; color: var(--muted); text-align: center; font-weight: 500; }
+  .message { min-height: 18px; margin: -6px 0 -4px; font-size: 13px; color: var(--muted); text-align: center; font-weight: 500; }
 
   /* ---------- Buttons ---------- */
   .actions { display: flex; gap: 10px; }
@@ -264,22 +309,24 @@
     background: var(--tile);
     font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
     white-space: nowrap;
-    transition: background .15s, transform .08s;
+    transition: background .15s, transform .08s, color .15s;
   }
   .btn:hover:not(:disabled) { background: var(--tile-hover); }
   .btn:active:not(:disabled) { transform: scale(.97); }
   .btn:disabled { opacity: .4; }
   .btn.primary { background: var(--accent); color: var(--accent-ink); }
   .btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
-  .btn.primary:disabled { background: var(--accent-disabled); color: var(--accent-disabled-ink); opacity: 1; }
+  .btn.confirm { color: var(--no); box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.4); }
   .btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn kbd { background: rgba(0, 0, 0, 0.15); border-color: rgba(0, 0, 0, 0.2); color: inherit; }
 
   /* ---------- Question bank ---------- */
   .bank { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .bank:empty { display: none; }
   .tile {
-    min-height: 60px;
-    padding: 10px 12px;
+    position: relative;
+    min-height: 62px;
+    padding: 16px 14px 12px;
     border-radius: 12px;
     background: var(--tile);
     box-shadow: inset 0 0 0 1px var(--border);
@@ -288,8 +335,18 @@
     text-align: center;
     transition: background .15s, transform .12s, box-shadow .15s;
   }
-  .tile:hover { background: var(--tile-hover); transform: translateY(-2px); }
-  .tile.selected { box-shadow: inset 0 0 0 2px var(--accent); background: var(--surface); }
+  .tile:hover { background: var(--tile-hover); transform: translateY(-2px); box-shadow: inset 0 0 0 1px var(--border-strong); }
+  .tile:active { transform: scale(.97); }
+  .tile .key {
+    position: absolute; top: 4px; left: 7px;
+    font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+    color: var(--dim);
+  }
+  .tips { margin: -4px 0 0; text-align: center; font-size: 11.5px; color: var(--dim); line-height: 1.8; }
+
+  @media (hover: none) {
+    .tile .key, .tips .keys-only { display: none; }
+  }
 
   /* ---------- Emoji shower ---------- */
   .shower {
@@ -311,10 +368,7 @@
     80% { opacity: var(--o, .6); }
     100% { opacity: 0; transform: translate3d(var(--drift, 0px), calc(100vh + 40px), 0) rotate(var(--rot, 90deg)); }
   }
-  @keyframes bob {
-    from { transform: translateY(-4px) rotate(-4deg); }
-    to { transform: translateY(4px) rotate(4deg); }
-  }
+  @keyframes bob { from { transform: translateY(-4px) rotate(-4deg); } to { transform: translateY(4px) rotate(4deg); } }
   @keyframes shimmer { 0%, 30% { transform: translateX(-100%); } 70%, 100% { transform: translateX(100%); } }
   @keyframes pop { 0% { transform: scale(.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   @keyframes shake {
@@ -323,6 +377,7 @@
     60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
   }
   @keyframes rowIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @keyframes fresh { from { background: rgba(232, 163, 61, 0.16); } to { background: transparent; } }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
@@ -330,14 +385,15 @@
   }
 
   @media (max-width: 480px) {
-    body { place-items: start center; padding-top: 20px; }
-    .cloud { height: 200px; }
+    body { place-items: start center; padding-top: 18px; }
+    .cloud { height: 196px; }
     .mystery { width: 88px; height: 88px; border-radius: 22px; }
     .mystery .emoji { font-size: 50px; }
     .bank { grid-template-columns: repeat(2, 1fr); }
     .row { grid-template-columns: 16px auto 1fr auto; gap: 8px; padding: 7px 8px; font-size: 13.5px; }
-    .log { max-height: 200px; }
+    .log { max-height: 190px; }
     .btn { font-size: 14px; padding: 0 10px; }
+    .mode { min-width: 0; }
     .pill.best { display: none; }
   }
 </style>
@@ -367,30 +423,36 @@
   <div class="field" id="field">
     <div class="suggest" id="suggest" role="listbox" hidden></div>
     <div class="input-box">
-      <button class="mode" id="modeChip" data-mode="ask" aria-label="Switch between ask and guess">ask()</button>
-      <input id="input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="80" placeholder="Ask a yes/no question…" aria-label="Question or guess">
+      <span class="mode" id="modeChip" data-mode="idle" aria-hidden="true">ask()</span>
+      <input id="input" type="text" enterkeyhint="send" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="80" placeholder="Ask a question or type an emoji name…" aria-label="Question or emoji name">
+      <button class="send" id="sendBtn" aria-label="Send" disabled>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+      </button>
     </div>
   </div>
 
   <p class="message" id="message" aria-live="polite"></p>
 
+  <div class="bank" id="bank"></div>
+
   <div class="actions" id="actions">
     <button class="btn" id="shuffleBtn">
       <svg viewBox="0 0 24 24"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
-      Shuffle
+      New questions
     </button>
-    <button class="btn" id="modeBtn">
-      <svg viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
-      <span id="modeBtnLabel">Guess</span>
+    <button class="btn" id="giveUpBtn">
+      <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      <span id="giveUpLabel">Give up</span>
     </button>
-    <button class="btn primary" id="submitBtn" disabled>Submit</button>
   </div>
 
   <div class="actions" id="endActions" hidden>
-    <button class="btn primary" id="againBtn">Play again</button>
+    <button class="btn primary" id="againBtn">Play again <kbd>Enter</kbd></button>
   </div>
 
-  <div class="bank" id="bank"></div>
+  <p class="tips" id="tips">
+    <span class="keys-only"><kbd>1</kbd>–<kbd>6</kbd> ask a bank question · <kbd>↑</kbd><kbd>↓</kbd> pick · <kbd>Enter</kbd> send · </span>tap a floating emoji to guess it
+  </p>
 </main>
 
 <script>
@@ -576,6 +638,7 @@
     'mystery', 'emoji', 'probably', 'kinda', 'sorta', 'like', 'one', 'i', 'me', 'my', 'we', 'find', 'found', 'use'
   ]);
   const ARTICLES = new Set(['a', 'an', 'the', 'some']);
+  const QUESTION_START = /^(is|does|do|did|can|could|would|will|has|have|are|was|should|might)\b/;
 
   const words = (str) => String(str)
     .toLowerCase()
@@ -675,6 +738,7 @@
     return results.sort((a, b) => b.score - a.score || b.q.tier - a.q.tier || a.q.order - b.q.order);
   }
 
+  /* ---------- Emoji matching ---------- */
   const GUESS_PREFIX = /^(?:is it|is this|it is|its|it s|could it be|might it be|would it be|maybe|i think it is|i think its|i think it s|my guess is|i guess|guess|is that)\s+(.+)$/;
 
   function stripGuessPrefix(text) {
@@ -683,15 +747,7 @@
     return m ? m[1] : cleaned;
   }
 
-  function detectGuess(text) {
-    const cleaned = words(text).join(' ');
-    const m = cleaned.match(GUESS_PREFIX);
-    if (m && NAME_INDEX.has(compactName(m[1]))) return m[1];
-    if (NAME_INDEX.has(compactName(cleaned))) return cleaned;
-    return null;
-  }
-
-  // Resolve typed text to exactly one emoji: exact name/alias first, then a single close typo match.
+  // Exact name/alias first, then a single close typo match. Returns -1 when unsure.
   function resolveEmoji(text) {
     const key = compactName(stripGuessPrefix(text));
     if (!key) return -1;
@@ -704,7 +760,7 @@
     return close.size === 1 ? Array.from(close)[0] : -1;
   }
 
-  // Autocomplete for guess(): every emoji in the game, matched by name or alias.
+  // Every emoji in the game, matched by name or alias. score 100+ = exact.
   function searchEmojis(text, limit = 6) {
     const qWords = words(stripGuessPrefix(text)).filter((w) => !ARTICLES.has(w));
     const qc = qWords.join('');
@@ -715,7 +771,7 @@
         const nw = words(n).filter((w) => !ARTICLES.has(w));
         const nc = nw.join('');
         let score = 0;
-        if (nc === qc) score = 100;
+        if (nc === qc || compactName(n) === compactName(qc)) score = 100;
         else if (nc.startsWith(qc)) score = 80;
         else if (qWords.length === 1 && nw.some((w) => w.startsWith(qc))) score = 60;
         else if (qc.length >= 3 && nc.includes(qc)) score = 40;
@@ -726,21 +782,56 @@
         if (!prev || prev.score < score) hits.set(e.index, { score, via: ni === 0 ? null : n });
       });
     });
+    const top = Math.max(0, ...Array.from(hits.values()).map((h) => h.score));
     return Array.from(hits.entries())
+      .filter(([, h]) => top < 40 || h.score >= 40) // drop fuzzy noise when real matches exist
       .sort((a, b) => b[1].score - a[1].score || EMOJIS[a[0]].name.localeCompare(EMOJIS[b[0]].name))
       .slice(0, limit)
-      .map(([idx, h]) => ({ idx, via: h.via }));
+      .map(([idx, h]) => ({ idx, score: h.score, via: h.via }));
+  }
+
+  /* ---------- Unified suggestions (questions + emojis in one list) ---------- */
+  // Returns { items: [{kind:'q'|'e', id, ...}], confident: bool } — confident means Enter
+  // can safely act on items[0] without the player picking it.
+  function buildSuggestions(text) {
+    const t = text.trim();
+    if (!t) return { items: [], confident: false };
+    const lower = words(t).join(' ');
+    const questionish = QUESTION_START.test(lower);
+    const qs = rankQuestions(t, true);
+    const es = searchEmojis(t, 6);
+    const qTop = qs[0];
+    const eTop = es[0];
+    const eExact = !!eTop && eTop.score >= 100;
+
+    let emojiFirst;
+    if (!eTop) emojiFirst = false;
+    else if (!qTop) emojiFirst = true;
+    else if (eExact) emojiFirst = true;
+    else if (questionish) emojiFirst = false;
+    else emojiFirst = qTop.score < 1;
+
+    const qItems = qs.slice(0, emojiFirst ? 2 : 3).map((r) => ({ kind: 'q', id: r.q.id, score: r.score }));
+    const eItems = es.slice(0, emojiFirst ? 4 : 3).map((h) => ({ kind: 'e', id: h.idx, score: h.score, via: h.via }));
+    const items = emojiFirst ? eItems.concat(qItems) : qItems.concat(eItems);
+
+    let confident = false;
+    if (items.length) {
+      const first = items[0];
+      if (first.kind === 'q') confident = first.score >= 1;
+      else confident = first.score >= 100 || es.length === 1 || resolveEmoji(t) === first.id;
+    }
+    return { items, confident, emojiFirst };
   }
 
   /* ---------- State ---------- */
   let state;
   let bank = [];
-  let selected = null;
-  let suggestIds = [];
-  let suggestKind = 'question';
-  let suggestActive = -1;
+  let sugg = { items: [], confident: false };
+  let active = -1;          // highlighted suggestion index
   let lastIdx = -1;
   let best = loadBest();
+  let giveUpTimer = null;
 
   function newGame() {
     let idx;
@@ -752,12 +843,12 @@
       steps: 0,
       wrong: [],
       status: 'playing',
-      mode: 'ask',
+      newBest: false,
       cloudOrder: shuffled(EMOJIS.map((e) => e.index))
     };
     input.value = '';
-    selected = null;
-    setMessage(`Ask yes/no questions, then guess — beat it in ${PAR} steps.`);
+    setMessage('Type a question or an emoji name — or tap a question below.');
+    resetGiveUp();
     closeSuggest();
     resetCloud();
     dealBank();
@@ -796,7 +887,6 @@
       pool = pool.concat(shuffled(unasked.filter((q) => !pool.includes(q))).slice(0, BANK_SIZE - pool.length));
     }
     bank = shuffled(pool).slice(0, BANK_SIZE).map((q) => q.id);
-    selected = null;
   }
 
   /* ---------- Actions ---------- */
@@ -808,8 +898,7 @@
     }
     state.steps++;
     state.log.push({ q: qid, a: answerFor(target(), qid), step: state.steps });
-    input.value = '';
-    closeSuggest();
+    afterMove();
     setMessage(parMessage());
     dealBank();
     render();
@@ -824,8 +913,7 @@
     const ok = idx === t.index;
     state.steps++;
     state.log.push({ guess: e.name, char: e.char, ok, step: state.steps });
-    input.value = '';
-    closeSuggest();
+    afterMove();
 
     if (ok) {
       state.status = state.steps <= PAR ? 'won' : 'solved';
@@ -839,68 +927,72 @@
     } else {
       state.wrong.push(idx);
       shake();
-      setMessage(`Nope. ${parMessage()}`);
+      setMessage(`Not ${e.name}. ${parMessage()}`.trim());
       dealBank();
     }
     render();
   }
 
+  function giveUp() {
+    if (!playing()) return;
+    if (!giveUpTimer) {
+      $('giveUpLabel').textContent = 'Sure? Tap again';
+      $('giveUpBtn').classList.add('confirm');
+      giveUpTimer = setTimeout(resetGiveUp, 2500);
+      return;
+    }
+    resetGiveUp();
+    state.status = 'gaveup';
+    afterMove();
+    state.freshRow = -1;
+    setMessage('');
+    render();
+  }
+
+  function resetGiveUp() {
+    clearTimeout(giveUpTimer);
+    giveUpTimer = null;
+    $('giveUpLabel').textContent = 'Give up';
+    $('giveUpBtn').classList.remove('confirm');
+  }
+
+  function afterMove() {
+    input.value = '';
+    closeSuggest();
+    resetGiveUp();
+    state.freshRow = state.log.length - 1;
+  }
+
   function parMessage() {
     const left = PAR - state.steps;
     if (left > 0) return '';
-    if (left === 0) return 'That was your last step under par — make it count.';
+    if (left === 0) return 'Last step under par — make it count.';
     return 'Past par — keep going, but it won’t count as a win.';
+  }
+
+  function pick(item) {
+    if (!item) return;
+    if (item.kind === 'q') ask(item.id);
+    else guess(item.id);
   }
 
   function submit() {
     if (!playing()) return;
     const text = input.value.trim();
     if (!text) return;
-
-    if (state.mode === 'guess') {
-      if (suggestKind === 'emoji' && suggestActive >= 0 && suggestIds[suggestActive] !== undefined) {
-        guess(suggestIds[suggestActive]);
-        return;
-      }
-      const idx = resolveEmoji(text);
-      if (idx >= 0) { guess(idx); return; }
-      const hits = searchEmojis(text);
-      if (hits.length === 1) { guess(hits[0].idx); return; }
-      const ranked = /\?\s*$/.test(text) ? rankQuestions(text) : [];
-      if (ranked.length && ranked[0].score >= 1) setMessage('That looks like a question — switch to ask().');
-      else setMessage(hits.length ? 'Pick one of the emojis from the list.' : 'That’s not an emoji in this game — pick one from the list.');
-      return;
+    const s = buildSuggestions(text);
+    if (active >= 0 && sugg.items[active]) { pick(sugg.items[active]); return; }
+    if (s.items.length && s.confident) { pick(s.items[0]); return; }
+    const idx = resolveEmoji(text);
+    if (idx >= 0) { guess(idx); return; }
+    if (s.items.length) {
+      setMessage('A few things match — pick one from the list.');
+      if (suggestEl.hidden) updateSuggest();
+      active = 0;
+      paintActive();
+    } else {
+      setMessage('Couldn’t match that — try a question below or an emoji name.');
     }
-
-    if (suggestKind === 'question' && suggestActive >= 0 && suggestIds[suggestActive]) { ask(suggestIds[suggestActive]); return; }
-
-    const g = detectGuess(text);
-    if (g) {
-      const idx = resolveEmoji(g);
-      if (idx >= 0) { guess(idx); return; }
-    }
-
-    const ranked = rankQuestions(text);
-    if (ranked.length && ranked[0].score >= 1) ask(ranked[0].q.id);
-    else setMessage('I can’t answer that one — try a question from the bank.');
-  }
-
-  function setMode(mode) {
-    if (!playing()) return;
-    state.mode = mode;
-    selected = null;
-    closeSuggest();
-    render();
-    input.focus();
-  }
-
-  function pickTile(qid) {
-    if (!playing()) return;
-    if (selected === qid) { ask(qid); return; }
-    selected = qid;
-    input.value = QUESTION_BY_ID[qid].text;
-    closeSuggest();
-    render();
   }
 
   /* ---------- DOM ---------- */
@@ -909,6 +1001,12 @@
   const suggestEl = $('suggest');
   const cloudEl = $('cloud');
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const narrow = window.matchMedia && window.matchMedia('(max-width: 480px)');
+  function setPlaceholder() {
+    input.placeholder = narrow && narrow.matches ? 'Question or emoji name…' : 'Ask a question or type an emoji name…';
+  }
+  setPlaceholder();
+  if (narrow && narrow.addEventListener) narrow.addEventListener('change', setPlaceholder);
 
   function setMessage(text) { $('message').textContent = text; }
 
@@ -919,8 +1017,7 @@
     m.classList.add('shake');
   }
 
-  /* ---------- Candidate cloud ---------- */
-  // Fixed spots scattered around the centre tile, in % of the cloud box.
+  /* ---------- Candidate cloud (tap an emoji to guess it) ---------- */
   const SLOTS = (() => {
     const W = 520, H = 220, TILE = 70, MIN_GAP = 52;
     const pts = [];
@@ -951,7 +1048,6 @@
     if (playing()) {
       const cands = new Set(candidates().map((e) => e.index));
       const order = state.cloudOrder.filter((i) => cands.has(i));
-      // Keep emojis that are already floating first so they don't jump around.
       const keep = order.filter((i) => floats.has(i));
       const fresh = order.filter((i) => !floats.has(i));
       keep.concat(fresh).slice(0, Math.min(CLOUD_MAX, SLOTS.length)).forEach((i) => showing.add(i));
@@ -961,7 +1057,8 @@
       if (showing.has(i)) return;
       floats.delete(i);
       f.el.classList.add('out');
-      setTimeout(() => f.el.remove(), 650);
+      f.el.tabIndex = -1;
+      setTimeout(() => f.el.remove(), 550);
     });
 
     const used = new Set(Array.from(floats.values()).map((f) => f.slot));
@@ -970,15 +1067,20 @@
       if (floats.has(i)) return;
       const slot = free.shift();
       if (slot === undefined) return;
-      const el = document.createElement('span');
+      const e = EMOJIS[i];
+      const el = document.createElement('button');
+      el.type = 'button';
       el.className = 'float enter';
+      el.dataset.name = e.name;
+      el.setAttribute('aria-label', `Guess ${e.name}`);
       el.style.left = SLOTS[slot].left + '%';
       el.style.top = SLOTS[slot].top + '%';
-      el.style.setProperty('--o', rand(0.28, 0.55).toFixed(2));
-      el.style.setProperty('--s', Math.round(rand(24, 36)) + 'px');
+      el.style.setProperty('--o', rand(0.3, 0.55).toFixed(2));
+      el.style.setProperty('--s', Math.round(rand(24, 34)) + 'px');
       el.style.setProperty('--d', rand(2.8, 4.8).toFixed(2) + 's');
       el.style.setProperty('--delay', (-rand(0, 4)).toFixed(2) + 's');
-      el.innerHTML = `<span class="emoji">${EMOJIS[i].char}</span>`;
+      el.innerHTML = `<span class="emoji">${e.char}</span>`;
+      el.addEventListener('click', () => guess(i));
       cloudEl.insertBefore(el, cloudEl.firstChild);
       floats.set(i, { el, slot });
       requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('enter')));
@@ -1024,23 +1126,20 @@
   /* ---------- Render ---------- */
   function render() {
     const t = target();
-    const active = playing();
+    const isPlaying = playing();
     const left = PAR - state.steps;
 
-    // Step pill
     $('steps').textContent = state.steps;
     $('par').textContent = PAR;
     $('stepPill').classList.toggle('over', state.steps > PAR);
     $('bestPill').hidden = best === null;
     $('best').textContent = best === null ? '' : best;
 
-    // Mystery tile
     const mystery = $('mystery');
     mystery.classList.toggle('win', state.status === 'won');
-    mystery.classList.toggle('over', state.status === 'solved');
-    mystery.innerHTML = active ? '<span class="q" aria-label="Hidden emoji">?</span>' : `<span class="emoji">${t.char}</span>`;
+    mystery.classList.toggle('over', state.status === 'solved' || state.status === 'gaveup');
+    mystery.innerHTML = isPlaying ? '<span class="q" aria-label="Hidden emoji">?</span>' : `<span class="emoji">${t.char}</span>`;
 
-    // Steps-left line under the cloud
     const leftEl = $('left');
     leftEl.className = 'left';
     if (state.status === 'won') {
@@ -1049,6 +1148,9 @@
       leftEl.classList.add('done');
     } else if (state.status === 'solved') {
       leftEl.innerHTML = `<b>${escapeHtml(t.name)}</b> in ${plural(state.steps, 'step')} · ${state.steps - PAR} over par — no win this time`;
+      leftEl.classList.add('done');
+    } else if (state.status === 'gaveup') {
+      leftEl.innerHTML = `It was <b>${escapeHtml(t.name)}</b> · gave up after ${plural(state.steps, 'step')}`;
       leftEl.classList.add('done');
     } else if (left >= 0) {
       leftEl.textContent = `${left} left`;
@@ -1059,104 +1161,102 @@
 
     renderCloud();
 
-    // Log (with a marker where par was crossed)
     const log = $('log');
     let html = '';
     state.log.forEach((e, i) => {
       if (e.step === PAR + 1) html += '<div class="par-line">par</div>';
-      const past = e.step > PAR ? ' past-par' : '';
+      const cls = 'row' + (e.step > PAR ? ' past-par' : '') + (i === state.freshRow ? ' fresh' : '');
       if (e.q) {
-        const cls = e.a === 'Yes' ? 'yes' : e.a === 'No' ? 'no' : 'maybe';
-        html += `<div class="row${past}"><span class="num">${i + 1}</span><span class="chip">ask()</span><span class="text">${escapeHtml(QUESTION_BY_ID[e.q].text)}</span><span class="ans ${cls}">${e.a}</span></div>`;
+        const a = e.a === 'Yes' ? 'yes' : e.a === 'No' ? 'no' : 'maybe';
+        html += `<div class="${cls}"><span class="num">${i + 1}</span><span class="chip">ask()</span><span class="text">${escapeHtml(QUESTION_BY_ID[e.q].text)}</span><span class="ans ${a}">${e.a}</span></div>`;
       } else {
-        const icon = e.char ? `<span class="emoji">${e.char}</span>` : '';
-        html += `<div class="row${past}"><span class="num">${i + 1}</span><span class="chip guess">guess()</span><span class="text">${icon}${escapeHtml(e.guess)}?</span><span class="ans ${e.ok ? 'yes' : 'no'}">${e.ok ? 'Yes' : 'No'}</span></div>`;
+        html += `<div class="${cls}"><span class="num">${i + 1}</span><span class="chip guess">guess()</span><span class="text"><span class="emoji">${e.char}</span>${escapeHtml(e.guess)}?</span><span class="ans ${e.ok ? 'yes' : 'no'}">${e.ok ? 'Yes' : 'No'}</span></div>`;
       }
     });
     log.innerHTML = html;
+    state.freshRow = -1;
     requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
 
-    // Input + buttons
-    $('field').hidden = !active;
-    $('actions').hidden = !active;
-    $('endActions').hidden = active;
-    const chip = $('modeChip');
-    chip.dataset.mode = state.mode;
-    chip.textContent = state.mode === 'ask' ? 'ask()' : 'guess()';
-    input.placeholder = state.mode === 'ask' ? 'Ask a yes/no question…' : 'Start typing an emoji name…';
-    $('modeBtnLabel').textContent = state.mode === 'ask' ? 'Guess' : 'Ask';
-    $('shuffleBtn').disabled = state.mode === 'guess';
-    $('submitBtn').disabled = !input.value.trim();
+    $('field').hidden = !isPlaying;
+    $('actions').hidden = !isPlaying;
+    $('tips').hidden = !isPlaying;
+    $('endActions').hidden = isPlaying;
+    $('sendBtn').disabled = !input.value.trim();
+    updateModeChip();
 
-    // Bank
     const bankEl = $('bank');
     bankEl.innerHTML = '';
-    if (active && state.mode === 'ask') {
-      bank.forEach((qid) => {
+    if (isPlaying) {
+      bank.forEach((qid, n) => {
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = 'tile' + (selected === qid ? ' selected' : '');
-        b.textContent = QUESTION_BY_ID[qid].text;
-        b.addEventListener('click', () => pickTile(qid));
+        b.className = 'tile';
+        b.innerHTML = `<span class="key">${n + 1}</span>${escapeHtml(QUESTION_BY_ID[qid].text)}`;
+        b.addEventListener('click', () => ask(qid));
         bankEl.appendChild(b);
       });
     }
 
-    if (!active) $('againBtn').focus();
+    if (!isPlaying) $('againBtn').focus();
   }
 
-  /* ---------- Autocomplete ---------- */
+  function updateModeChip() {
+    const chip = $('modeChip');
+    const item = sugg.items[active >= 0 ? active : 0];
+    const mode = input.value.trim() && item ? (item.kind === 'e' ? 'guess' : 'ask') : 'idle';
+    chip.dataset.mode = mode;
+    chip.textContent = mode === 'guess' ? 'guess()' : 'ask()';
+  }
+
+  /* ---------- Autocomplete dropdown ---------- */
   function updateSuggest() {
     const text = input.value.trim();
-    if (!playing() || !text || selected) { closeSuggest(); return; }
-
-    if (state.mode === 'guess') {
-      const hits = searchEmojis(text);
-      suggestKind = 'emoji';
-      if (!hits.length) {
-        suggestIds = [];
-        suggestActive = -1;
-        suggestEl.innerHTML = '<div class="suggest-note">No emoji by that name — keep typing.</div>';
-        suggestEl.hidden = false;
-        return;
-      }
-      suggestIds = hits.map((h) => h.idx);
-      if (suggestActive < 0 || suggestActive >= suggestIds.length) suggestActive = 0;
-      suggestEl.innerHTML = hits.map((h, i) => {
-        const e = EMOJIS[h.idx];
-        const tried = state.wrong.includes(h.idx);
-        const note = tried ? 'guessed · No' : h.via ? escapeHtml(titleCase(h.via)) : '';
-        return `<button type="button" class="suggest-item${tried ? ' tried' : ''}" role="option" data-i="${i}" aria-selected="${i === suggestActive}"><span class="opt"><span class="emoji">${e.char}</span>${escapeHtml(e.name)}</span>${note ? `<small>${note}</small>` : ''}</button>`;
-      }).join('');
+    if (!playing() || !text) { closeSuggest(); updateModeChip(); return; }
+    sugg = buildSuggestions(text);
+    if (!sugg.items.length) {
+      active = -1;
+      suggestEl.innerHTML = '<div class="suggest-note">No match yet — keep typing, or try a question below.</div>';
       suggestEl.hidden = false;
+      updateModeChip();
       return;
     }
-
-    suggestKind = 'question';
-    if (detectGuess(text)) {
-      suggestIds = [];
-      suggestActive = -1;
-      suggestEl.innerHTML = '<div class="suggest-note">This counts as a guess() — press Enter to guess.</div>';
-      suggestEl.hidden = false;
-      return;
-    }
-    const ranked = rankQuestions(text, true).slice(0, 4);
-    if (!ranked.length) { closeSuggest(); return; }
+    if (active >= sugg.items.length) active = -1;
     const asked = askedIds();
-    suggestIds = ranked.map((r) => r.q.id);
-    if (suggestActive >= suggestIds.length) suggestActive = -1;
-    suggestEl.innerHTML = ranked.map((r, i) => {
-      const prev = asked.has(r.q.id) ? state.log.find((e) => e.q === r.q.id) : null;
-      return `<button type="button" class="suggest-item" role="option" data-i="${i}" aria-selected="${i === suggestActive}"><span>${escapeHtml(r.q.text)}</span>${prev ? `<small>asked · ${prev.a}</small>` : ''}</button>`;
-    }).join('');
+    let html = '';
+    let lastKind = null;
+    sugg.items.forEach((it, i) => {
+      if (it.kind !== lastKind) {
+        html += `<div class="suggest-head"><span>${it.kind === 'q' ? 'Ask' : 'Guess'}</span></div>`;
+        lastKind = it.kind;
+      }
+      if (it.kind === 'q') {
+        const prev = asked.has(it.id) ? state.log.find((e) => e.q === it.id) : null;
+        html += `<button type="button" class="suggest-item${prev ? ' tried' : ''}" role="option" data-i="${i}"><span>${escapeHtml(QUESTION_BY_ID[it.id].text)}</span>${prev ? `<small>asked · ${prev.a}</small>` : ''}</button>`;
+      } else {
+        const e = EMOJIS[it.id];
+        const tried = state.wrong.includes(it.id);
+        const note = tried ? 'guessed · No' : it.via ? escapeHtml(titleCase(it.via)) : '';
+        html += `<button type="button" class="suggest-item${tried ? ' tried' : ''}" role="option" data-i="${i}"><span class="opt"><span class="emoji">${e.char}</span>${escapeHtml(e.name)}</span>${note ? `<small>${note}</small>` : ''}</button>`;
+      }
+    });
+    suggestEl.innerHTML = html;
     suggestEl.hidden = false;
+    paintActive();
+  }
+
+  function paintActive() {
+    const shown = active >= 0 ? active : (sugg.confident ? 0 : -1);
+    suggestEl.querySelectorAll('.suggest-item').forEach((el) => {
+      el.setAttribute('aria-selected', String(Number(el.dataset.i) === shown));
+    });
+    updateModeChip();
   }
 
   function closeSuggest() {
     suggestEl.hidden = true;
     suggestEl.innerHTML = '';
-    suggestIds = [];
-    suggestActive = -1;
+    sugg = { items: [], confident: false };
+    active = -1;
   }
 
   /* ---------- Events ---------- */
@@ -1164,53 +1264,69 @@
     const item = ev.target.closest('.suggest-item');
     if (!item) return;
     ev.preventDefault();
-    const id = suggestIds[Number(item.dataset.i)];
-    if (id === undefined) return;
-    if (suggestKind === 'emoji') guess(id);
-    else ask(id);
+    pick(sugg.items[Number(item.dataset.i)]);
   });
 
   input.addEventListener('input', (ev) => {
-    if (selected && input.value !== QUESTION_BY_ID[selected].text) {
-      selected = null;
-      render();
-    }
     if (ev.inputType && ev.inputType.startsWith('insert')) sprinkle();
-    suggestActive = -1;
-    $('submitBtn').disabled = !input.value.trim();
+    active = -1;
+    $('sendBtn').disabled = !input.value.trim();
     updateSuggest();
   });
 
   input.addEventListener('keydown', (ev) => {
+    const hasItems = !suggestEl.hidden && sugg.items.length > 0;
     if (ev.key === 'Enter') {
       ev.preventDefault();
       submit();
-    } else if (ev.key === 'ArrowDown' && suggestIds.length) {
+    } else if (!input.value && /^[1-6]$/.test(ev.key) && bank[Number(ev.key) - 1]) {
       ev.preventDefault();
-      suggestActive = (suggestActive + 1) % suggestIds.length;
-      updateSuggest();
-    } else if (ev.key === 'ArrowUp' && suggestIds.length) {
+      ask(bank[Number(ev.key) - 1]);
+    } else if ((ev.key === 'ArrowDown' || (ev.key === 'Tab' && !ev.shiftKey)) && hasItems) {
       ev.preventDefault();
-      suggestActive = suggestActive <= 0 ? suggestIds.length - 1 : suggestActive - 1;
-      updateSuggest();
+      active = (active + 1) % sugg.items.length;
+      paintActive();
+    } else if ((ev.key === 'ArrowUp' || (ev.key === 'Tab' && ev.shiftKey)) && hasItems) {
+      ev.preventDefault();
+      active = active <= 0 ? sugg.items.length - 1 : active - 1;
+      paintActive();
     } else if (ev.key === 'Escape') {
+      ev.preventDefault();
       if (!suggestEl.hidden) closeSuggest();
-      else { input.value = ''; selected = null; render(); }
+      else input.value = '';
+      $('sendBtn').disabled = !input.value.trim();
+      updateModeChip();
     }
   });
 
   input.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== input) closeSuggest(); }, 120));
   input.addEventListener('focus', updateSuggest);
 
-  $('modeChip').addEventListener('click', () => setMode(state.mode === 'ask' ? 'guess' : 'ask'));
-  $('modeBtn').addEventListener('click', () => setMode(state.mode === 'ask' ? 'guess' : 'ask'));
-  $('shuffleBtn').addEventListener('click', () => { dealBank(); render(); });
-  $('submitBtn').addEventListener('click', submit);
+  $('sendBtn').addEventListener('mousedown', (ev) => ev.preventDefault()); // keep focus + dropdown
+  $('sendBtn').addEventListener('click', () => { submit(); input.focus(); });
+  $('shuffleBtn').addEventListener('click', () => { dealBank(); render(); input.focus(); });
+  $('giveUpBtn').addEventListener('click', giveUp);
   $('againBtn').addEventListener('click', newGame);
 
   document.addEventListener('keydown', (ev) => {
-    if (ev.metaKey || ev.ctrlKey || ev.altKey || document.activeElement === input || !playing()) return;
-    if (ev.key.length === 1 && /\S/.test(ev.key)) input.focus();
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+    if (!playing()) {
+      if (ev.key === 'Enter' || ev.key === 'n' || ev.key === 'N') {
+        ev.preventDefault();
+        newGame();
+      }
+      return;
+    }
+    if (document.activeElement === input) return;
+    if (/^[1-6]$/.test(ev.key) && bank[Number(ev.key) - 1] && !(document.activeElement && document.activeElement.tagName === 'INPUT')) {
+      ev.preventDefault();
+      ask(bank[Number(ev.key) - 1]);
+      return;
+    }
+    if (ev.key === '/' || (ev.key.length === 1 && /\S/.test(ev.key))) {
+      if (ev.key === '/') ev.preventDefault();
+      input.focus();
+    }
   });
 
   newGame();
