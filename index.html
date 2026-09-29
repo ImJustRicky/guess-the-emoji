@@ -4,35 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#0b0b0b">
-<meta name="description" content="Guess the Emoji — ask yes/no questions to find the daily mystery emoji.">
+<meta name="theme-color" content="#09090b">
 <title>Guess the Emoji</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0b0b0b;
-    --surface: #141414;
-    --surface-2: #1c1c1c;
-    --tile: #262626;
-    --tile-hover: #313131;
-    --border: rgba(255, 255, 255, 0.08);
-    --border-strong: rgba(255, 255, 255, 0.14);
-    --text: #fafafa;
-    --muted: #a3a3a3;
-    --dim: #737373;
-    --faint: #525252;
-    --accent: #f59e0b;
-    --accent-hover: #fbb02d;
-    --accent-ink: #0b0b0b;
-    --accent-disabled: #7a4a08;
-    --accent-disabled-ink: rgba(255, 255, 255, 0.38);
-    --yes: #22c55e;
-    --no: #ef4444;
-    --maybe: #f59e0b;
-    --badge: #0ea5e9;
-    --radius-tile: 12px;
+    --bg: #09090b;
+    --bg-glow: #131318;
+    --surface: #111114;
+    --tile: #1a1a1f;
+    --tile-hover: #24242b;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-strong: rgba(255, 255, 255, 0.11);
+    --text: #ececf1;
+    --muted: #8a8a96;
+    --dim: #5c5c66;
+    --accent: #e8a33d;
+    --accent-hover: #f0b458;
+    --accent-ink: #120c03;
+    --accent-soft: rgba(232, 163, 61, 0.14);
+    --accent-disabled: rgba(232, 163, 61, 0.16);
+    --accent-disabled-ink: rgba(236, 236, 241, 0.32);
+    --yes: #4ade80;
+    --no: #f87171;
+    --maybe: #fbbf24;
     --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --font-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
@@ -41,244 +38,132 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: var(--bg);
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px 16px;
+    background: radial-gradient(1100px 620px at 50% -12%, var(--bg-glow), var(--bg) 70%) fixed, var(--bg);
     color: var(--text);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
     overflow-x: hidden;
   }
   button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
   button:disabled { cursor: not-allowed; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .emoji { font-family: var(--font-emoji); font-weight: 400; line-height: 1; }
-  .mono { font-family: var(--font-mono); }
-  svg.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* ---------- Top bar ---------- */
-  .topbar {
-    height: 72px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  }
-  .brand { display: flex; align-items: center; gap: 2px; text-decoration: none; }
-  .brand-mark {
-    width: 32px; height: 32px; border-radius: 9px;
-    background: #fff; color: #000;
-    display: grid; place-items: center;
-    font-weight: 900; font-size: 17px;
-  }
-  .brand-name {
-    color: var(--accent);
-    font-weight: 900;
-    font-size: 20px;
-    letter-spacing: -0.03em;
-    padding-left: 4px;
-  }
-  .avatar-btn {
-    width: 38px; height: 38px; border-radius: 12px;
-    border: 2px solid var(--accent);
-    display: grid; place-items: center;
-    background: var(--surface-2);
-    color: var(--text);
-    transition: background .15s;
-  }
-  .avatar-btn:hover { background: var(--tile); }
-
-  /* ---------- Layout ---------- */
-  main {
-    flex: 1;
+  /* ---------- Game shell ---------- */
+  .game {
     width: 100%;
-    max-width: 752px;
-    margin: 0 auto;
-    padding: 28px 16px 24px;
+    max-width: 560px;
     display: flex;
     flex-direction: column;
+    gap: 20px;
   }
-  .game-head {
+
+  .bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
   }
-  .title-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-  .title-row h1 {
+  .bar h1 {
     margin: 0;
-    font-size: 21px;
+    font-size: 18px;
     font-weight: 900;
     letter-spacing: -0.035em;
   }
-  .date { font-size: 11px; color: var(--dim); font-weight: 500; }
-  .subtitle { font-size: 11.5px; color: var(--dim); margin-top: 2px; font-weight: 500; }
-  .subtitle button {
-    color: var(--accent); font-weight: 700; font-size: 11.5px; padding: 0;
-    text-decoration: underline; text-underline-offset: 2px;
-  }
-  .head-tools { display: flex; align-items: center; gap: 6px; flex: none; }
-  .timer {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--surface-2);
-    border-radius: 999px;
-    padding: 8px 12px;
-    color: var(--dim);
-  }
-  .timer .mono { color: var(--text); font-weight: 700; font-size: 16px; letter-spacing: 0.02em; min-width: 38px; }
-  .timer[hidden] { display: none; }
-  .icon-btn {
-    position: relative;
-    width: 34px; height: 34px;
-    display: grid; place-items: center;
-    border-radius: 10px;
-    color: var(--text);
-    transition: background .15s, opacity .15s;
-  }
-  .icon-btn:hover:not(:disabled) { background: var(--surface-2); }
-  .icon-btn:disabled { opacity: .4; }
-  .badge {
-    position: absolute; top: -3px; right: -1px;
-    min-width: 17px; height: 17px; padding: 0 4px;
-    border-radius: 999px;
-    background: var(--badge); color: #fff;
-    font-size: 10px; font-weight: 800;
-    display: grid; place-items: center;
-    border: 2px solid var(--bg);
-    box-sizing: content-box;
-  }
-  .badge[data-zero="true"] { background: var(--faint); }
-
-  .status-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 0 0;
-    font-size: 12px; color: var(--muted); font-weight: 500;
-  }
-  .lives { display: flex; align-items: center; gap: 8px; }
+  .bar h1 span { color: var(--accent); }
+  .meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--muted); font-weight: 500; }
   .dots { display: flex; gap: 4px; }
-  .dot { width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: background .25s, transform .25s; }
-  .dot.lost { background: #333; transform: scale(.85); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text); transition: background .25s, transform .25s; }
+  .dot.lost { background: #2a2a31; transform: scale(.8); }
+  .meta .count { font-family: var(--font-mono); color: var(--text); font-weight: 700; }
 
-  /* ---------- Stage ---------- */
-  .stage {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    padding: 28px 0 20px;
-    min-height: 300px;
-  }
-  .prompt { font-size: 16px; color: var(--muted); font-weight: 500; text-align: center; margin: 0; }
-  .mystery-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  /* ---------- Mystery ---------- */
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 0 0; }
   .mystery {
     position: relative;
-    width: 112px; height: 112px;
-    border-radius: 24px;
+    width: 108px; height: 108px;
+    border-radius: 26px;
     background: var(--tile);
+    box-shadow: inset 0 0 0 1px var(--border-strong), 0 20px 50px -20px rgba(0, 0, 0, 0.9);
     display: grid; place-items: center;
     overflow: hidden;
-    box-shadow: inset 0 0 0 1px var(--border);
   }
   .mystery::after {
     content: "";
     position: absolute; inset: 0;
-    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.08) 50%, transparent 70%);
+    background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%);
     transform: translateX(-100%);
-    animation: shimmer 3.2s ease-in-out infinite;
+    animation: shimmer 3.4s ease-in-out infinite;
     pointer-events: none;
   }
-  .mystery.revealed::after { display: none; }
-  .mystery .q { font-size: 56px; font-weight: 900; color: var(--faint); }
-  .mystery .emoji { font-size: 64px; }
-  .mystery .emoji.blurred { filter: blur(9px) saturate(.7); transform: scale(1.05); }
-  .mystery.revealed { background: var(--surface-2); box-shadow: inset 0 0 0 2px var(--accent); }
-  .mystery.revealed .emoji { animation: pop .55s cubic-bezier(.2, 1.4, .4, 1); }
-  .mystery.lost-state { box-shadow: inset 0 0 0 2px var(--no); }
+  .mystery .q { font-size: 52px; font-weight: 900; color: #34343c; }
+  .mystery .emoji { font-size: 62px; animation: pop .55s cubic-bezier(.2, 1.4, .4, 1); }
+  .mystery.won { box-shadow: inset 0 0 0 2px var(--accent), 0 0 60px -12px rgba(232, 163, 61, 0.45); }
+  .mystery.lost { box-shadow: inset 0 0 0 2px var(--no), 0 0 60px -16px rgba(248, 113, 113, 0.4); }
+  .mystery.won::after, .mystery.lost::after { display: none; }
   .mystery.shake { animation: shake .42s ease; }
-  .reveal-name { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
-  .reveal-name[hidden] { display: none; }
+  .caption { margin: 0; font-size: 14px; color: var(--muted); font-weight: 500; text-align: center; }
+  .caption b { color: var(--text); font-weight: 800; }
 
-  .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 100%; }
-  .slots[hidden] { display: none; }
-  .slot {
-    width: 40px; height: 44px;
-    border-radius: 10px;
-    background: var(--tile);
-    display: grid; place-items: center;
-    font-weight: 900; font-size: 20px;
-  }
-  .slot.gap { width: 14px; background: transparent; }
-  .slot.filled { background: var(--surface-2); box-shadow: inset 0 0 0 1.5px var(--accent); color: var(--text); }
-
+  /* ---------- Log ---------- */
   .log {
-    width: 100%;
-    max-width: 560px;
-    max-height: 264px;
+    display: flex; flex-direction: column; gap: 2px;
+    max-height: 250px;
     overflow-y: auto;
-    display: flex; flex-direction: column;
-    gap: 2px;
     scrollbar-width: thin;
-    scrollbar-color: #333 transparent;
+    scrollbar-color: #2a2a31 transparent;
   }
   .log:empty { display: none; }
-  .log-row {
+  .row {
     display: grid;
-    grid-template-columns: 22px auto 1fr auto;
+    grid-template-columns: 20px auto 1fr auto;
     align-items: center;
     gap: 10px;
-    padding: 7px 10px;
+    padding: 8px 10px;
     border-radius: 10px;
     font-size: 14px;
-    animation: rowIn .25s ease;
+    animation: rowIn .22s ease;
   }
-  .log-row:nth-child(odd) { background: rgba(255, 255, 255, 0.025); }
-  .log-num { color: var(--dim); font-family: var(--font-mono); font-size: 12px; text-align: right; }
+  .row:nth-child(odd) { background: rgba(255, 255, 255, 0.022); }
+  .num { font-family: var(--font-mono); font-size: 11.5px; color: var(--dim); text-align: right; }
   .chip {
     font-family: var(--font-mono);
     font-size: 11.5px;
     color: var(--muted);
-    background: var(--surface-2);
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 2px 6px;
     white-space: nowrap;
   }
-  .chip.guess { color: #fcd34d; }
-  .chip.hint { color: #7dd3fc; }
-  .log-text { font-weight: 600; overflow-wrap: anywhere; }
-  .log-text .emoji { margin-right: 6px; font-size: 15px; }
-  .ans { font-weight: 800; font-size: 13.5px; white-space: nowrap; }
+  .chip.guess { color: var(--accent); }
+  .text { font-weight: 600; overflow-wrap: anywhere; }
+  .text .emoji { margin-right: 6px; font-size: 15px; }
+  .ans { font-weight: 800; font-size: 13px; white-space: nowrap; }
   .ans.yes { color: var(--yes); }
   .ans.no { color: var(--no); }
   .ans.maybe { color: var(--maybe); }
-  .ans.info { color: #7dd3fc; }
-  .empty-log { font-size: 13px; color: var(--dim); text-align: center; margin: 0; }
-  .empty-log[hidden] { display: none; }
 
-  /* ---------- Composer ---------- */
-  .composer { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .input-wrap { position: relative; width: 100%; max-width: 560px; }
+  /* ---------- Input ---------- */
+  .field { position: relative; }
   .input-box {
     display: flex; align-items: center; gap: 10px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 0 8px 0 8px;
     height: 54px;
+    padding: 0 8px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
     transition: border-color .15s, box-shadow .15s;
   }
-  .input-box:focus-within { border-color: rgba(245, 158, 11, 0.55); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12); }
-  .mode-chip {
+  .input-box:focus-within { border-color: rgba(232, 163, 61, 0.5); box-shadow: 0 0 0 3px rgba(232, 163, 61, 0.1); }
+  .mode {
     font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 13px; font-weight: 700;
     padding: 7px 10px;
     border-radius: 10px;
     background: var(--tile);
@@ -286,198 +171,81 @@
     white-space: nowrap;
     transition: background .15s, color .15s;
   }
-  .mode-chip:hover:not(:disabled) { background: var(--tile-hover); }
-  .mode-chip[data-mode="guess"] { color: #fcd34d; background: rgba(245, 158, 11, 0.14); }
+  .mode:hover:not(:disabled) { background: var(--tile-hover); }
+  .mode[data-mode="guess"] { color: var(--accent); background: var(--accent-soft); }
   .input-box input {
-    flex: 1; min-width: 0;
+    flex: 1; min-width: 0; height: 100%;
     background: transparent; border: 0; outline: 0;
     color: var(--text);
     font: 600 16px var(--font-sans);
-    height: 100%;
   }
   .input-box input::placeholder { color: var(--dim); font-weight: 500; }
-  .input-box input:disabled { opacity: .5; }
 
   .suggest {
     position: absolute;
     left: 0; right: 0; bottom: calc(100% + 8px);
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 6px;
     background: var(--surface);
     border: 1px solid var(--border-strong);
     border-radius: 14px;
-    padding: 6px;
-    display: flex; flex-direction: column; gap: 2px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
     z-index: 5;
   }
   .suggest[hidden] { display: none; }
+  .suggest-note { font-size: 11px; color: var(--dim); padding: 4px 10px 2px; font-weight: 500; }
   .suggest-item {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    text-align: left;
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
     padding: 10px 12px;
     border-radius: 10px;
-    font-weight: 600; font-size: 14.5px;
+    text-align: left;
+    font-size: 14.5px; font-weight: 600;
   }
-  .suggest-item[aria-selected="true"], .suggest-item:hover { background: var(--tile); }
-  .suggest-item small { color: var(--dim); font-weight: 500; font-size: 12px; white-space: nowrap; }
-  .suggest-head { font-size: 11px; color: var(--dim); padding: 4px 12px 2px; font-weight: 500; }
+  .suggest-item:hover, .suggest-item[aria-selected="true"] { background: var(--tile); }
+  .suggest-item small { color: var(--dim); font-size: 12px; font-weight: 500; white-space: nowrap; }
 
-  .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  .message { min-height: 18px; margin: -10px 0 -6px; font-size: 13px; color: var(--muted); text-align: center; font-weight: 500; }
+
+  /* ---------- Buttons ---------- */
+  .actions { display: flex; gap: 10px; }
   .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    height: 48px;
-    padding: 0 20px;
+    flex: 1 1 0;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 46px;
+    padding: 0 14px;
     border-radius: 999px;
     background: var(--tile);
-    font-weight: 700; font-size: 16px;
-    letter-spacing: -0.01em;
-    transition: background .15s, transform .08s, color .15s;
+    font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
     white-space: nowrap;
+    transition: background .15s, transform .08s;
   }
   .btn:hover:not(:disabled) { background: var(--tile-hover); }
   .btn:active:not(:disabled) { transform: scale(.97); }
-  .btn:disabled { opacity: .45; }
-  .btn.primary { background: var(--accent); color: var(--accent-ink); min-width: 134px; }
+  .btn:disabled { opacity: .4; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); }
   .btn.primary:hover:not(:disabled) { background: var(--accent-hover); }
   .btn.primary:disabled { background: var(--accent-disabled); color: var(--accent-disabled-ink); opacity: 1; }
-  .btn.full { width: 100%; }
+  .btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
-  .bank-label { font-size: 11px; color: var(--dim); font-weight: 500; text-align: center; margin: 0; }
-  .bank { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 720px; }
-  .bank[hidden] { display: none; }
+  /* ---------- Question bank ---------- */
+  .bank { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .bank:empty { display: none; }
   .tile {
-    min-height: 64px;
-    padding: 10px 16px;
-    border-radius: var(--radius-tile);
+    min-height: 60px;
+    padding: 10px 12px;
+    border-radius: 12px;
     background: var(--tile);
-    font-weight: 800;
-    font-size: 15px;
-    letter-spacing: -0.01em;
-    max-width: 220px;
-    line-height: 1.2;
+    box-shadow: inset 0 0 0 1px var(--border);
+    font-size: 13.5px; font-weight: 700;
+    line-height: 1.25;
     text-align: center;
     transition: background .15s, transform .12s, box-shadow .15s;
   }
-  .tile:hover:not(:disabled) { background: var(--tile-hover); transform: translateY(-2px); }
-  .tile.selected { box-shadow: inset 0 0 0 2px var(--accent); background: var(--surface-2); }
-  .tile:disabled { opacity: .4; }
+  .tile:hover { background: var(--tile-hover); transform: translateY(-2px); }
+  .tile.selected { box-shadow: inset 0 0 0 2px var(--accent); background: var(--surface); }
 
-  /* ---------- Toast ---------- */
-  .toast {
-    position: fixed;
-    top: 84px; left: 50%;
-    transform: translate(-50%, -12px);
-    background: var(--text); color: var(--bg);
-    font-weight: 700; font-size: 14px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s, transform .2s;
-    z-index: 50;
-    max-width: calc(100vw - 32px);
-    text-align: center;
-  }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  [hidden] { display: none !important; }
 
-  /* ---------- Modals ---------- */
-  .overlay {
-    position: fixed; inset: 0;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    display: grid; place-items: center;
-    padding: 16px;
-    z-index: 40;
-    animation: fadeIn .18s ease;
-  }
-  .overlay[hidden] { display: none; }
-  .modal {
-    position: relative;
-    width: 100%; max-width: 440px;
-    max-height: calc(100dvh - 32px);
-    overflow-y: auto;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    padding: 24px;
-    animation: modalIn .22s cubic-bezier(.2, 1, .3, 1);
-  }
-  .modal h2 { margin: 0 0 6px; font-size: 22px; font-weight: 900; letter-spacing: -0.03em; }
-  .modal h3 { margin: 20px 0 10px; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
-  .modal p { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin: 0 0 10px; }
-  .modal ul { margin: 0 0 8px; padding-left: 18px; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
-  .modal li strong { color: var(--text); }
-  .modal-close { position: absolute; top: 14px; right: 14px; }
-  .example { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 6px; margin: 10px 0; }
-  .example .log-row { animation: none; font-size: 13.5px; }
-
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .stat { background: var(--surface-2); border-radius: 14px; padding: 12px 6px; text-align: center; }
-  .stat b { display: block; font-size: 22px; font-weight: 900; letter-spacing: -0.03em; }
-  .stat span { font-size: 11px; color: var(--dim); font-weight: 500; }
-
-  .setting {
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .setting:last-of-type { border-bottom: 0; }
-  .setting-text b { display: block; font-size: 15px; font-weight: 700; }
-  .setting-text span { font-size: 12.5px; color: var(--dim); }
-  .switch {
-    position: relative;
-    width: 44px; height: 26px;
-    border-radius: 999px;
-    background: var(--tile);
-    flex: none;
-    transition: background .15s;
-  }
-  .switch::after {
-    content: "";
-    position: absolute; top: 3px; left: 3px;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: #fff;
-    transition: transform .18s;
-  }
-  .switch[aria-checked="true"] { background: var(--accent); }
-  .switch[aria-checked="true"]::after { transform: translateX(18px); }
-  .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
-  .btn.ghost { background: transparent; box-shadow: inset 0 0 0 1px var(--border-strong); }
-  .btn.ghost:hover:not(:disabled) { background: var(--surface-2); }
-  .btn.danger { color: #fca5a5; }
-
-  .result-top { text-align: center; }
-  .result-emoji { font-size: 84px; display: block; margin: 6px 0 8px; animation: pop .6s cubic-bezier(.2, 1.4, .4, 1); }
-  .result-name { font-size: 15px; color: var(--muted); font-weight: 600; margin-bottom: 18px; }
-  .result-name b { color: var(--text); }
-  .share-grid {
-    font-family: var(--font-emoji);
-    font-size: 18px;
-    letter-spacing: 2px;
-    text-align: center;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 12px;
-    margin-top: 12px;
-    word-break: break-all;
-    line-height: 1.5;
-  }
-  .countdown { text-align: center; margin-top: 14px; font-size: 13px; color: var(--dim); }
-  .countdown .mono { color: var(--text); font-weight: 700; font-size: 15px; }
-  .countdown[hidden] { display: none; }
-
-  /* ---------- Confetti ---------- */
-  .confetti {
-    position: fixed; top: -60px;
-    font-size: 28px;
-    pointer-events: none;
-    z-index: 60;
-    animation: fall linear forwards;
-  }
-
-  /* ---------- Animations ---------- */
   @keyframes shimmer { 0%, 30% { transform: translateX(-100%); } 70%, 100% { transform: translateX(100%); } }
   @keyframes pop { 0% { transform: scale(.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   @keyframes shake {
@@ -486,236 +254,76 @@
     60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
   }
   @keyframes rowIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
-  @keyframes fall { to { transform: translateY(110vh) rotate(540deg); opacity: .9; } }
-
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
-    .confetti { display: none; }
   }
 
-  /* ---------- Responsive ---------- */
-  @media (max-width: 600px) {
-    main { padding: 20px 16px 20px; }
-    .game-head { align-items: flex-start; }
-    .date { display: block; width: 100%; }
-    .timer { padding: 6px 10px; }
-    .timer .mono { font-size: 14px; min-width: 32px; }
-    .timer svg { display: none; }
-    .icon-btn { width: 32px; height: 32px; }
-    .stage { padding: 20px 0 16px; min-height: 240px; }
-    .mystery { width: 96px; height: 96px; border-radius: 20px; }
-    .mystery .emoji { font-size: 54px; }
-    .log { max-height: 220px; }
-    .log-row { grid-template-columns: 18px auto 1fr auto; gap: 8px; padding: 6px 8px; font-size: 13.5px; }
-    .actions { gap: 8px; }
-    .title-row h1 { font-size: 19px; }
-    .actions { flex-wrap: nowrap; width: 100%; }
-    .actions .btn { flex: 1 1 0; min-width: 0; }
-    .btn { height: 44px; padding: 0 10px; font-size: 14.5px; gap: 6px; }
-    .btn.primary { min-width: 0; }
-    .tile { min-height: 54px; font-size: 13.5px; padding: 8px 12px; max-width: calc(50% - 4px); flex: 1 1 calc(50% - 4px); }
-    .slot { width: 30px; height: 36px; font-size: 16px; border-radius: 8px; }
-    .slot.gap { width: 8px; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 420px) {
-    .actions .btn:not(.primary) svg.icon { display: none; }
+  @media (max-width: 480px) {
+    body { place-items: start center; padding-top: 20px; }
+    .bank { grid-template-columns: repeat(2, 1fr); }
+    .row { grid-template-columns: 16px auto 1fr auto; gap: 8px; padding: 7px 8px; font-size: 13.5px; }
+    .log { max-height: 210px; }
+    .btn { font-size: 14px; padding: 0 10px; }
+    .meta .label { display: none; }
   }
 </style>
 </head>
 <body>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
-    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
-    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></symbol>
-    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
-    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></symbol>
-    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></symbol>
-    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
-    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
-    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
-    <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></symbol>
-    <symbol id="i-dice" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 8h.01"/><path d="M16 8h.01"/><path d="M12 12h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/></symbol>
-  </defs>
-</svg>
-
-<header class="topbar">
-  <a class="brand" href="#" aria-label="Guess the Emoji home">
-    <span class="brand-mark">?</span>
-    <span class="brand-name">Guess the Emoji</span>
-  </a>
-  <button class="avatar-btn" id="statsBtn" aria-label="Statistics"><svg class="icon"><use href="#i-chart"/></svg></button>
-</header>
-
-<main>
-  <section class="game-head">
-    <div>
-      <div class="title-row">
-        <h1>Guess the Emoji</h1>
-        <span class="date" id="dateLabel"></span>
-      </div>
-      <div class="subtitle" id="subtitle">Find the mystery emoji</div>
+<main class="game">
+  <div class="bar">
+    <h1>Guess the <span>Emoji</span></h1>
+    <div class="meta">
+      <span class="dots" id="lives" aria-label="Lives"></span>
+      <span><span class="count" id="qLeft">20</span> <span class="label">questions</span> left</span>
     </div>
-    <div class="head-tools">
-      <div class="timer" id="timer" aria-label="Elapsed time">
-        <svg class="icon" style="width:16px;height:16px"><use href="#i-clock"/></svg>
-        <span class="mono" id="timerText">0:00</span>
-      </div>
-      <button class="icon-btn" id="helpBtn" aria-label="How to play"><svg class="icon"><use href="#i-help"/></svg></button>
-      <button class="icon-btn" id="hintBtn" aria-label="Use a hint">
-        <svg class="icon"><use href="#i-bulb"/></svg>
-        <span class="badge" id="hintBadge">3</span>
-      </button>
-      <button class="icon-btn" id="settingsBtn" aria-label="Settings"><svg class="icon"><use href="#i-gear"/></svg></button>
-    </div>
-  </section>
-
-  <div class="status-row">
-    <div class="lives">Lives <span class="dots" id="lives" aria-live="polite"></span></div>
-    <div id="qCounter">Questions used: 0/20</div>
   </div>
 
   <section class="stage">
-    <p class="prompt" id="prompt">Find the mystery emoji.</p>
-    <div class="mystery-wrap">
-      <div class="mystery" id="mystery" aria-live="polite"><span class="q">?</span></div>
-      <div class="reveal-name" id="revealName" hidden></div>
-    </div>
-    <div class="slots" id="slots" hidden></div>
-    <p class="empty-log" id="emptyLog">Ask a yes/no question to begin — or tap one from the bank below.</p>
-    <div class="log" id="log" aria-live="polite"></div>
+    <div class="mystery" id="mystery" aria-live="polite"><span class="q">?</span></div>
+    <p class="caption" id="caption">Ask yes/no questions, then guess the emoji.</p>
   </section>
 
-  <section class="composer">
-    <div class="input-wrap">
-      <div class="suggest" id="suggest" role="listbox" hidden></div>
-      <div class="input-box">
-        <button class="mode-chip" id="modeChip" data-mode="ask" aria-label="Switch between asking and guessing">ask()</button>
-        <input id="input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="80" placeholder="Ask a yes/no question…" aria-label="Your question or guess">
-      </div>
-    </div>
+  <div class="log" id="log" aria-live="polite"></div>
 
-    <div class="actions">
-      <button class="btn" id="shuffleBtn"><svg class="icon"><use href="#i-shuffle"/></svg>Shuffle</button>
-      <button class="btn" id="modeBtn"><svg class="icon"><use href="#i-swap"/></svg><span id="modeBtnLabel">Guess</span></button>
-      <button class="btn" id="clearBtn"><svg class="icon"><use href="#i-reset"/></svg>Clear</button>
-      <button class="btn primary" id="submitBtn" disabled>Submit</button>
+  <div class="field" id="field">
+    <div class="suggest" id="suggest" role="listbox" hidden></div>
+    <div class="input-box">
+      <button class="mode" id="modeChip" data-mode="ask" aria-label="Switch between ask and guess">ask()</button>
+      <input id="input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="80" placeholder="Ask a yes/no question…" aria-label="Question or guess">
     </div>
+  </div>
 
-    <p class="bank-label" id="bankLabel">Question bank · 6 suggestions</p>
-    <div class="bank" id="bank"></div>
-  </section>
+  <p class="message" id="message" aria-live="polite"></p>
+
+  <div class="actions" id="actions">
+    <button class="btn" id="shuffleBtn">
+      <svg viewBox="0 0 24 24"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
+      Shuffle
+    </button>
+    <button class="btn" id="modeBtn">
+      <svg viewBox="0 0 24 24"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>
+      <span id="modeBtnLabel">Guess</span>
+    </button>
+    <button class="btn primary" id="submitBtn" disabled>Submit</button>
+  </div>
+
+  <div class="actions" id="endActions" hidden>
+    <button class="btn primary" id="againBtn">Play again</button>
+  </div>
+
+  <div class="bank" id="bank"></div>
 </main>
-
-<div class="toast" id="toast" role="status" aria-live="assertive"></div>
-
-<!-- Help -->
-<div class="overlay" id="helpModal" hidden>
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
-    <button class="icon-btn modal-close" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
-    <h2 id="helpTitle">How to play</h2>
-    <p>There's one mystery emoji every day. Ask yes/no questions to narrow it down, then guess it.</p>
-    <ul>
-      <li><strong>ask()</strong> — type a yes/no question or tap one from the question bank. You get <strong>20 questions</strong>.</li>
-      <li><strong>guess()</strong> — name the emoji. You have <strong>5 lives</strong>; each wrong guess costs one.</li>
-      <li>Typing <strong>“Is it a banana?”</strong> in ask mode counts as a guess.</li>
-      <li><strong>Hints</strong> (💡) — 3 per game: a free clue, the first letter, then a blurry peek.</li>
-      <li>Tap a bank tile once to pick it, again (or Submit) to ask. <strong>Shuffle</strong> deals new questions.</li>
-    </ul>
-    <div class="example">
-      <div class="log-row"><span class="log-num">1</span><span class="chip">ask()</span><span class="log-text">Is it an animal?</span><span class="ans no">No</span></div>
-      <div class="log-row"><span class="log-num">2</span><span class="chip">ask()</span><span class="log-text">Is it food or drink?</span><span class="ans yes">Yes</span></div>
-      <div class="log-row"><span class="log-num">3</span><span class="chip">ask()</span><span class="log-text">Is it yellow?</span><span class="ans yes">Yes</span></div>
-      <div class="log-row"><span class="log-num">4</span><span class="chip guess">guess()</span><span class="log-text"><span class="emoji">🍌</span>Banana?</span><span class="ans yes">Yes</span></div>
-    </div>
-    <p>Answers are <span style="color:var(--yes);font-weight:700">Yes</span>, <span style="color:var(--no);font-weight:700">No</span> or <span style="color:var(--maybe);font-weight:700">Sometimes</span>. A new emoji arrives at midnight ET.</p>
-    <div class="modal-actions"><button class="btn primary full" data-close>Let's play</button></div>
-  </div>
-</div>
-
-<!-- Settings + stats -->
-<div class="overlay" id="settingsModal" hidden>
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-    <button class="icon-btn modal-close" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
-    <h2 id="settingsTitle">Settings</h2>
-    <h3>Statistics</h3>
-    <div class="stats-grid">
-      <div class="stat"><b id="stPlayed">0</b><span>Played</span></div>
-      <div class="stat"><b id="stWin">0</b><span>Win %</span></div>
-      <div class="stat"><b id="stStreak">0</b><span>Streak</span></div>
-      <div class="stat"><b id="stMax">0</b><span>Best streak</span></div>
-    </div>
-    <h3>Preferences</h3>
-    <div class="setting">
-      <div class="setting-text"><b>Hard mode</b><span>Hide the question bank — type every question yourself.</span></div>
-      <button class="switch" id="hardSwitch" role="switch" aria-checked="false" aria-label="Hard mode"></button>
-    </div>
-    <div class="setting">
-      <div class="setting-text"><b>Show timer</b><span>Display the clock in the header.</span></div>
-      <button class="switch" id="timerSwitch" role="switch" aria-checked="true" aria-label="Show timer"></button>
-    </div>
-    <div class="modal-actions">
-      <button class="btn full" id="practiceBtn"><svg class="icon"><use href="#i-dice"/></svg>Play a random emoji</button>
-      <button class="btn ghost danger full" id="resetStatsBtn">Reset statistics</button>
-    </div>
-  </div>
-</div>
-
-<!-- Result -->
-<div class="overlay" id="resultModal" hidden>
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
-    <button class="icon-btn modal-close" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
-    <div class="result-top">
-      <h2 id="resultTitle">You got it!</h2>
-      <span class="emoji result-emoji" id="resultEmoji">🍌</span>
-      <div class="result-name" id="resultName"></div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat"><b id="rsQuestions">0</b><span>Questions</span></div>
-      <div class="stat"><b id="rsWrong">0</b><span>Wrong</span></div>
-      <div class="stat"><b id="rsHints">0</b><span>Hints</span></div>
-      <div class="stat"><b id="rsTime">0:00</b><span>Time</span></div>
-    </div>
-    <div class="share-grid" id="shareGrid"></div>
-    <div class="countdown" id="countdown">Next emoji in <span class="mono" id="countdownText">00:00:00</span></div>
-    <div class="modal-actions">
-      <button class="btn primary full" id="shareBtn"><svg class="icon"><use href="#i-share"/></svg>Share result</button>
-      <button class="btn full" id="againBtn"><svg class="icon"><use href="#i-dice"/></svg>Play a random emoji</button>
-    </div>
-  </div>
-</div>
-
-<noscript><p style="text-align:center;color:#a3a3a3">Guess the Emoji needs JavaScript to run.</p></noscript>
 
 <script>
 (() => {
   'use strict';
 
-  /* =========================================================
-     Config
-     ========================================================= */
   const MAX_QUESTIONS = 20;
   const MAX_LIVES = 5;
-  const MAX_HINTS = 3;
   const BANK_SIZE = 6;
-  const EPOCH = Date.UTC(2026, 0, 1);
-  const TZ = 'America/New_York';
-  const STORE = {
-    daily: (key) => 'gte:daily:' + key,
-    stats: 'gte:stats',
-    settings: 'gte:settings',
-    seenHelp: 'gte:seenHelp'
-  };
 
-  /* =========================================================
-     Question bank
-     [id, question text, keywords, tier]
-     tier 1 = broad, 2 = medium, 3 = specific
-     ========================================================= */
+  /* Question bank: [id, question, keywords, tier]  (tier 1 broad → 3 specific) */
   const QUESTION_DEFS = [
     ['living', 'Is it alive?', ['alive', 'living', 'live', 'organism', 'living thing', 'breathe', 'breathes'], 1],
     ['animal', 'Is it an animal?', ['animal', 'creature', 'beast', 'critter'], 1],
@@ -776,10 +384,7 @@
     ['gray', 'Is it gray?', ['gray', 'grey'], 3]
   ];
 
-  /* =========================================================
-     Emoji set
-     [emoji, name, aliases (| separated), yes-tags, sometimes-tags]
-     ========================================================= */
+  /* Emoji set: [emoji, name, aliases (| separated), yes-tags, sometimes-tags] */
   const EMOJI_DEFS = [
     ['🐶', 'Dog', 'puppy|doggy|doggo|dog face|hound|pup', 'living animal mammal pet legs legs4 brown', 'white farm'],
     ['🐱', 'Cat', 'kitten|kitty|cat face', 'living animal mammal pet legs legs4 yellow', 'night orange'],
@@ -882,9 +487,7 @@
     ['🪁', 'Kite', '', 'object flies sky sport', 'red']
   ];
 
-  /* =========================================================
-     Text helpers
-     ========================================================= */
+  /* ---------- Text helpers ---------- */
   const STOP_WORDS = new Set([
     'is', 'it', 'a', 'an', 'the', 'does', 'do', 'did', 'can', 'could', 'would', 'will', 'you', 'your', 'its', 'of',
     'or', 'and', 'be', 'are', 'was', 'this', 'that', 'to', 'for', 'usually', 'mostly', 'something', 'thing',
@@ -892,33 +495,26 @@
     'have', 'has', 'at', 'by', 'mainly', 'generally', 'normally', 'any', 'some', 'there', 'what', 'maybe',
     'mystery', 'emoji', 'probably', 'kinda', 'sorta', 'like', 'one', 'i', 'me', 'my', 'we', 'find', 'found', 'use'
   ]);
-  const ARTICLE_WORDS = new Set(['a', 'an', 'the', 'some']);
+  const ARTICLES = new Set(['a', 'an', 'the', 'some']);
 
-  function words(str) {
-    return String(str)
-      .toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g, '')
-      .replace(/[’']/g, '')
-      .replace(/[^a-z0-9]+/g, ' ')
-      .trim()
-      .split(' ')
-      .filter(Boolean);
-  }
-  function stem(w) {
-    return (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) ? w.slice(0, -1) : w;
-  }
-  function compactName(str) {
-    return words(str).filter((w) => !ARTICLE_WORDS.has(w)).map(stem).join('');
-  }
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
+  const words = (str) => String(str)
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[’']/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .split(' ')
+    .filter(Boolean);
+  const stem = (w) => (w.length > 3 && w.endsWith('s') && !w.endsWith('ss')) ? w.slice(0, -1) : w;
+  const compactName = (str) => words(str).filter((w) => !ARTICLES.has(w)).map(stem).join('');
+  const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const titleCase = (s) => s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
+
   function levenshtein(a, b) {
     if (a === b) return 0;
     if (!a.length) return b.length;
     if (!b.length) return a.length;
-    let prev = new Array(b.length + 1);
-    for (let j = 0; j <= b.length; j++) prev[j] = j;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
     for (let i = 1; i <= a.length; i++) {
       const cur = [i];
       for (let j = 1; j <= b.length; j++) {
@@ -928,35 +524,17 @@
     }
     return prev[b.length];
   }
-  function formatTime(total) {
-    const s = Math.max(0, Math.floor(total));
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = String(s % 60).padStart(2, '0');
-    return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
-  }
-  function mulberry32(seed) {
-    let a = seed >>> 0;
-    return () => {
-      a = (a + 0x6D2B79F5) >>> 0;
-      let t = a;
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  function shuffled(arr, rand = Math.random) {
+
+  function shuffled(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
+      const j = Math.floor(Math.random() * (i + 1));
       [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
   }
 
-  /* =========================================================
-     Build data
-     ========================================================= */
+  /* ---------- Data ---------- */
   const QUESTIONS = QUESTION_DEFS.map(([id, text, kws, tier], order) => ({
     id, text, tier, order,
     keywords: kws.map((k) => words(k).map(stem)).filter((k) => k.length)
@@ -974,19 +552,12 @@
     return { index, char, name, keys, yes: yesSet, maybe: maybeSet };
   });
 
-  // Map every compact name → emoji index (first one wins).
   const NAME_INDEX = new Map();
   EMOJIS.forEach((e) => e.keys.forEach((k) => { if (!NAME_INDEX.has(k)) NAME_INDEX.set(k, e.index); }));
 
-  function answerFor(emoji, qid) {
-    if (emoji.yes.has(qid)) return 'Yes';
-    if (emoji.maybe.has(qid)) return 'Sometimes';
-    return 'No';
-  }
+  const answerFor = (emoji, qid) => emoji.yes.has(qid) ? 'Yes' : emoji.maybe.has(qid) ? 'Sometimes' : 'No';
 
-  /* =========================================================
-     Question matching
-     ========================================================= */
+  /* ---------- Question matching ---------- */
   function containsSeq(tokens, seq) {
     outer: for (let i = 0; i <= tokens.length - seq.length; i++) {
       for (let j = 0; j < seq.length; j++) if (tokens[i + j] !== seq[j]) continue outer;
@@ -995,11 +566,11 @@
     return false;
   }
 
-  function rankQuestions(text, { partial = false } = {}) {
-    const raw = text.trim().toLowerCase();
+  function rankQuestions(text, partial = false) {
+    const raw = text.trim().toLowerCase().replace(/\?+$/, '');
     const allTokens = words(text).map(stem);
     const tokens = allTokens.filter((t) => !STOP_WORDS.has(t));
-    const lastRaw = words(text).pop() || '';
+    const last = words(text).pop() || '';
     const results = [];
     for (const q of QUESTIONS) {
       let score = 0;
@@ -1007,24 +578,15 @@
         if (containsSeq(allTokens, kw) && (kw.length > 1 || tokens.includes(kw[0]))) score += kw.length;
       }
       if (partial && score === 0) {
-        if (lastRaw.length >= 2 && q.keywords.some((kw) => kw.length === 1 && kw[0].startsWith(lastRaw) && !STOP_WORDS.has(lastRaw))) score += 0.5;
-        if (raw.length >= 3 && q.text.toLowerCase().includes(raw.replace(/\?+$/, ''))) score += 0.75;
+        if (last.length >= 2 && !STOP_WORDS.has(last) && q.keywords.some((kw) => kw.length === 1 && kw[0].startsWith(last))) score += 0.5;
+        if (raw.length >= 3 && q.text.toLowerCase().includes(raw)) score += 0.75;
       }
       if (score > 0) results.push({ q, score });
     }
-    results.sort((a, b) => b.score - a.score || b.q.tier - a.q.tier || a.q.order - b.q.order);
-    return results;
+    return results.sort((a, b) => b.score - a.score || b.q.tier - a.q.tier || a.q.order - b.q.order);
   }
 
   const GUESS_PREFIX = /^(?:is it|is this|it is|its|it s|could it be|might it be|would it be|maybe|i think it is|i think its|i think it s|my guess is|i guess|guess|is that)\s+(.+)$/;
-
-  function detectGuessInQuestion(text) {
-    const cleaned = words(text).join(' ');
-    const m = cleaned.match(GUESS_PREFIX);
-    if (m && NAME_INDEX.has(compactName(m[1]))) return m[1];
-    if (NAME_INDEX.has(compactName(cleaned))) return cleaned;
-    return null;
-  }
 
   function stripGuessPrefix(text) {
     const cleaned = words(text).join(' ');
@@ -1032,11 +594,18 @@
     return m ? m[1] : cleaned;
   }
 
+  function detectGuess(text) {
+    const cleaned = words(text).join(' ');
+    const m = cleaned.match(GUESS_PREFIX);
+    if (m && NAME_INDEX.has(compactName(m[1]))) return m[1];
+    if (NAME_INDEX.has(compactName(cleaned))) return cleaned;
+    return null;
+  }
+
   function isCorrectGuess(target, text) {
     const key = compactName(text);
     if (!key) return false;
     if (target.keys.includes(key)) return true;
-    // Never forgive a "typo" that is really another emoji's name (e.g. house vs horse).
     if (NAME_INDEX.has(key) && NAME_INDEX.get(key) !== target.index) return false;
     return target.keys.some((k) => {
       const allowed = k.length >= 9 ? 2 : k.length >= 5 ? 1 : 0;
@@ -1044,268 +613,123 @@
     });
   }
 
-  /* =========================================================
-     Dates (Eastern Time)
-     ========================================================= */
-  function etParts(date = new Date()) {
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23'
-    }).formatToParts(date);
-    const get = (t) => Number(parts.find((p) => p.type === t).value);
-    return { y: get('year'), m: get('month'), d: get('day'), h: get('hour') % 24, min: get('minute'), s: get('second') };
-  }
-  function dateKeyFromParts(p) {
-    return `${p.y}-${String(p.m).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`;
-  }
-  function todayKey() { return dateKeyFromParts(etParts()); }
-  function keyToUTC(key) {
-    const [y, m, d] = key.split('-').map(Number);
-    return Date.UTC(y, m - 1, d);
-  }
-  function shiftKey(key, days) {
-    return new Date(keyToUTC(key) + days * 86400000).toISOString().slice(0, 10);
-  }
-  function dayNumber(key) { return Math.round((keyToUTC(key) - EPOCH) / 86400000); }
-  function prettyDate(key) {
-    return new Date(keyToUTC(key)).toLocaleDateString('en-US', {
-      timeZone: 'UTC', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    }) + ' (ET)';
-  }
-  function secondsToMidnightET() {
-    const p = etParts();
-    return 86400 - (p.h * 3600 + p.min * 60 + p.s);
-  }
-
-  const DAILY_ORDER = shuffled(EMOJIS.map((e) => e.index), mulberry32(0x5EED2026));
-  function dailyIndex(key) {
-    const n = DAILY_ORDER.length;
-    return DAILY_ORDER[((dayNumber(key) % n) + n) % n];
-  }
-
-  /* =========================================================
-     Storage (all wrapped — storage can be unavailable)
-     ========================================================= */
-  function load(key, fallback) {
-    try {
-      const raw = localStorage.getItem(key);
-      return raw ? JSON.parse(raw) : fallback;
-    } catch (_) { return fallback; }
-  }
-  function save(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) { /* ignore */ }
-  }
-  function remove(key) {
-    try { localStorage.removeItem(key); } catch (_) { /* ignore */ }
-  }
-
-  const DEFAULT_STATS = { played: 0, wins: 0, streak: 0, maxStreak: 0, lastWin: null, lastPlayed: null };
-  let stats = Object.assign({}, DEFAULT_STATS, load(STORE.stats, {}));
-  let settings = Object.assign({ hard: false, timer: true }, load(STORE.settings, {}));
-
-  /* =========================================================
-     State
-     ========================================================= */
-  let state = null;
+  /* ---------- State ---------- */
+  let state;
   let bank = [];
-  let selectedBank = null;
-  let suggestItems = [];
+  let selected = null;
+  let suggestIds = [];
   let suggestActive = -1;
+  let lastIdx = -1;
 
-  function freshState(mode, key, idx) {
-    return {
-      v: 1, mode, key, idx,
-      log: [],
-      lives: MAX_LIVES,
-      qUsed: 0,
-      hints: 0,
-      wrong: [],
-      elapsed: 0,
-      status: 'playing',
-      inputMode: 'ask',
-      recorded: false
-    };
-  }
-
-  function startDaily() {
-    const key = todayKey();
-    const idx = dailyIndex(key);
-    const saved = load(STORE.daily(key), null);
-    state = (saved && saved.v === 1 && saved.idx === idx && saved.key === key) ? saved : freshState('daily', key, idx);
-    afterStateChange(true);
-  }
-
-  function startPractice() {
-    const daily = dailyIndex(todayKey());
-    let idx = daily;
-    const current = state ? state.idx : -1;
-    while (idx === daily || idx === current) idx = Math.floor(Math.random() * EMOJIS.length);
-    state = freshState('practice', todayKey(), idx);
-    afterStateChange(true);
-  }
-
-  function persist() {
-    if (state && state.mode === 'daily') save(STORE.daily(state.key), state);
+  function newGame() {
+    let idx;
+    do { idx = Math.floor(Math.random() * EMOJIS.length); } while (idx === lastIdx && EMOJIS.length > 1);
+    lastIdx = idx;
+    state = { idx, log: [], lives: MAX_LIVES, used: 0, wrong: [], status: 'playing', mode: 'ask' };
+    input.value = '';
+    selected = null;
+    setMessage('');
+    closeSuggest();
+    dealBank();
+    render();
+    input.focus();
   }
 
   const target = () => EMOJIS[state.idx];
-  const askedIds = () => new Set(state.log.filter((e) => e.q).map((e) => e.q));
   const playing = () => state.status === 'playing';
+  const askedIds = () => new Set(state.log.filter((e) => e.q).map((e) => e.q));
 
-  /* =========================================================
-     Suggestions (question bank)
-     ========================================================= */
+  /* ---------- Question bank ---------- */
   function candidates() {
     const answered = state.log.filter((e) => e.q);
     const wrong = new Set(state.wrong);
-    return EMOJIS.filter((e) =>
-      !e.keys.some((k) => wrong.has(k)) &&
-      answered.every((entry) => answerFor(e, entry.q) === entry.a)
-    );
+    return EMOJIS.filter((e) => !e.keys.some((k) => wrong.has(k)) && answered.every((a) => answerFor(e, a.q) === a.a));
   }
 
   function entropy(cands, qid) {
     const counts = { Yes: 0, No: 0, Sometimes: 0 };
     cands.forEach((e) => { counts[answerFor(e, qid)]++; });
     const n = cands.length || 1;
-    let h = 0;
-    Object.values(counts).forEach((c) => { if (c) { const p = c / n; h -= p * Math.log2(p); } });
-    return h;
+    return Object.values(counts).reduce((h, c) => (c ? h - (c / n) * Math.log2(c / n) : h), 0);
   }
 
   function dealBank() {
     const asked = askedIds();
     const unasked = QUESTIONS.filter((q) => !asked.has(q.id));
     const cands = candidates();
-    const scored = unasked
+    let pool = unasked
       .map((q) => ({ q, h: entropy(cands, q.id) + Math.random() * 0.05 }))
       .filter((s) => s.h > 0.06)
-      .sort((a, b) => b.h - a.h);
-    let pool = scored.slice(0, 12).map((s) => s.q);
+      .sort((a, b) => b.h - a.h)
+      .slice(0, 12)
+      .map((s) => s.q);
     if (pool.length < BANK_SIZE) {
-      const extra = shuffled(unasked.filter((q) => !pool.includes(q)));
-      pool = pool.concat(extra.slice(0, BANK_SIZE - pool.length));
+      pool = pool.concat(shuffled(unasked.filter((q) => !pool.includes(q))).slice(0, BANK_SIZE - pool.length));
     }
     bank = shuffled(pool).slice(0, BANK_SIZE).map((q) => q.id);
-    selectedBank = null;
+    selected = null;
   }
 
-  /* =========================================================
-     Actions
-     ========================================================= */
-  function ask(qid, { viaHint = false } = {}) {
+  /* ---------- Actions ---------- */
+  function ask(qid) {
     if (!playing()) return;
-    const asked = askedIds();
-    const q = QUESTION_BY_ID[qid];
-    if (asked.has(qid)) {
-      const prev = state.log.find((e) => e.q === qid);
-      toast(`Already asked — the answer was ${prev.a}.`);
+    if (askedIds().has(qid)) {
+      setMessage(`Already asked — the answer was ${state.log.find((e) => e.q === qid).a}.`);
       return;
     }
-    if (!viaHint && state.qUsed >= MAX_QUESTIONS) {
-      toast('No questions left — make your guess!');
-      setInputMode('guess');
+    if (state.used >= MAX_QUESTIONS) {
+      setMessage('No questions left — make your guess.');
+      setMode('guess');
       return;
     }
-    const a = answerFor(target(), qid);
-    state.log.push({ t: viaHint ? 'hint' : 'ask', q: qid, a });
-    if (!viaHint) state.qUsed++;
-    if (!viaHint && state.qUsed >= MAX_QUESTIONS) {
-      setTimeout(() => toast('That was your last question — time to guess!'), 350);
-      state.inputMode = 'guess';
+    state.log.push({ q: qid, a: answerFor(target(), qid) });
+    state.used++;
+    input.value = '';
+    closeSuggest();
+    if (state.used >= MAX_QUESTIONS) {
+      state.mode = 'guess';
+      setMessage('That was your last question — time to guess.');
+    } else {
+      setMessage('');
     }
-    clearInput();
     dealBank();
-    persist();
     render();
-    scrollLogToEnd();
-    return q;
   }
 
   function guess(text) {
     if (!playing()) return;
     const cleaned = stripGuessPrefix(text);
     const key = compactName(cleaned);
-    if (!key) { toast('Type the name of an emoji.'); return; }
-    if (state.wrong.includes(key)) { toast('You already guessed that.'); return; }
+    if (!key) { setMessage('Type the name of an emoji.'); return; }
+    if (state.wrong.includes(key)) { setMessage('You already guessed that.'); return; }
 
     const t = target();
-    const correct = isCorrectGuess(t, cleaned);
-    const knownIdx = NAME_INDEX.has(key) ? NAME_INDEX.get(key) : -1;
-    const display = correct ? t.name : (knownIdx >= 0 ? EMOJIS[knownIdx].name : titleCase(cleaned));
-    const char = correct ? t.char : (knownIdx >= 0 ? EMOJIS[knownIdx].char : '');
+    const ok = isCorrectGuess(t, cleaned);
+    const known = NAME_INDEX.has(key) ? EMOJIS[NAME_INDEX.get(key)] : null;
+    state.log.push({
+      guess: ok ? t.name : known ? known.name : titleCase(cleaned),
+      char: ok ? t.char : known ? known.char : '',
+      ok
+    });
+    input.value = '';
+    closeSuggest();
 
-    state.log.push({ t: 'guess', text: display, char, ok: correct });
-    clearInput();
-
-    if (correct) {
+    if (ok) {
       state.status = 'won';
-      finish();
+      setMessage('');
     } else {
       state.wrong.push(key);
       state.lives--;
-      shakeMystery();
+      shake();
       if (state.lives <= 0) {
         state.status = 'lost';
-        finish();
+        setMessage('');
       } else {
-        toast(state.lives === 1 ? 'Nope — last life!' : `Nope — ${state.lives} lives left.`);
+        setMessage(state.lives === 1 ? 'Nope — last life.' : `Nope — ${state.lives} lives left.`);
         dealBank();
       }
     }
-    persist();
     render();
-    scrollLogToEnd();
-  }
-
-  function useHint() {
-    if (!playing() || state.hints >= MAX_HINTS) return;
-    const t = target();
-    const n = state.hints + 1;
-    if (n === 1) {
-      const asked = askedIds();
-      const pick = (filterFn) => shuffled(QUESTIONS.filter((q) => !asked.has(q.id) && t.yes.has(q.id) && filterFn(q)))[0];
-      const q = pick((q) => q.tier === 2) || pick((q) => q.tier === 3) || pick(() => true)
-        || shuffled(QUESTIONS.filter((q) => !asked.has(q.id)))[0];
-      state.hints = 1;
-      if (q) {
-        ask(q.id, { viaHint: true });
-        toast('Hint: a free question, answered.');
-        return;
-      }
-    } else if (n === 2) {
-      state.hints = 2;
-      state.log.push({ t: 'hint', kind: 'letters' });
-      toast(`Hint: it starts with “${t.name[0].toUpperCase()}”.`);
-    } else {
-      state.hints = 3;
-      state.log.push({ t: 'hint', kind: 'blur' });
-      toast('Hint: a blurry peek at the emoji.');
-    }
-    persist();
-    render();
-    scrollLogToEnd();
-  }
-
-  function finish() {
-    if (state.mode === 'daily' && !state.recorded) {
-      state.recorded = true;
-      const yesterday = shiftKey(state.key, -1);
-      stats.played++;
-      stats.lastPlayed = state.key;
-      if (state.status === 'won') {
-        stats.wins++;
-        stats.streak = stats.lastWin === yesterday ? stats.streak + 1 : 1;
-        stats.lastWin = state.key;
-        stats.maxStreak = Math.max(stats.maxStreak, stats.streak);
-      } else {
-        stats.streak = 0;
-      }
-      save(STORE.stats, stats);
-    }
-    closeSuggest();
-    if (state.status === 'won') confetti(target().char);
-    setTimeout(() => openModal('resultModal'), state.status === 'won' ? 1100 : 900);
   }
 
   function submit() {
@@ -1313,287 +737,148 @@
     const text = input.value.trim();
     if (!text) return;
 
-    if (state.inputMode === 'guess') {
-      const looksLikeQuestion = /\?\s*$/.test(text) && !NAME_INDEX.has(compactName(stripGuessPrefix(text)));
-      const ranked = looksLikeQuestion ? rankQuestions(text) : [];
+    if (state.mode === 'guess') {
+      const questionLike = /\?\s*$/.test(text) && !NAME_INDEX.has(compactName(stripGuessPrefix(text)));
+      const ranked = questionLike ? rankQuestions(text) : [];
       if (ranked.length && ranked[0].score >= 1) {
-        toast('That looks like a question — switch to ask() to use it.');
+        setMessage('That looks like a question — switch to ask().');
         return;
       }
       guess(text);
       return;
     }
 
-    if (suggestActive >= 0 && suggestItems[suggestActive]) {
-      ask(suggestItems[suggestActive]);
-      return;
-    }
+    if (suggestActive >= 0 && suggestIds[suggestActive]) { ask(suggestIds[suggestActive]); return; }
 
-    const guessText = detectGuessInQuestion(text);
-    if (guessText) {
-      guess(guessText);
-      return;
-    }
+    const g = detectGuess(text);
+    if (g) { guess(g); return; }
 
     const ranked = rankQuestions(text);
-    if (ranked.length && ranked[0].score >= 1) {
-      ask(ranked[0].q.id);
-    } else {
-      toast('🤔 I can’t answer that one — try a question from the bank.');
-    }
+    if (ranked.length && ranked[0].score >= 1) ask(ranked[0].q.id);
+    else setMessage('I can’t answer that one — try a question from the bank.');
   }
 
-  /* =========================================================
-     DOM
-     ========================================================= */
-  const $ = (id) => document.getElementById(id);
-  const input = $('input');
-  const submitBtn = $('submitBtn');
-  const suggestEl = $('suggest');
-
-  function titleCase(s) {
-    return s.replace(/\b[a-z]/g, (c) => c.toUpperCase());
-  }
-
-  function setInputMode(mode) {
+  function setMode(mode) {
     if (!playing()) return;
-    if (mode === 'ask' && state.qUsed >= MAX_QUESTIONS) {
-      toast('No questions left — guess the emoji!');
+    if (mode === 'ask' && state.used >= MAX_QUESTIONS) {
+      setMessage('No questions left — make your guess.');
       mode = 'guess';
     }
-    state.inputMode = mode;
-    selectedBank = null;
-    persist();
-    renderComposer();
-    renderBank();
-    updateSuggest();
+    state.mode = mode;
+    selected = null;
+    closeSuggest();
+    render();
     input.focus();
   }
 
-  function clearInput() {
-    input.value = '';
-    selectedBank = null;
+  function pickTile(qid) {
+    if (!playing()) return;
+    if (selected === qid) { ask(qid); return; }
+    selected = qid;
+    input.value = QUESTION_BY_ID[qid].text;
     closeSuggest();
-    renderComposer();
+    render();
+  }
+
+  /* ---------- DOM ---------- */
+  const $ = (id) => document.getElementById(id);
+  const input = $('input');
+  const suggestEl = $('suggest');
+
+  function setMessage(text) { $('message').textContent = text; }
+
+  function shake() {
+    const m = $('mystery');
+    m.classList.remove('shake');
+    void m.offsetWidth;
+    m.classList.add('shake');
   }
 
   function render() {
-    renderHeader();
-    renderStatus();
-    renderStage();
-    renderLog();
-    renderComposer();
-    renderBank();
-  }
-
-  function renderHeader() {
-    $('dateLabel').textContent = state.mode === 'daily'
-      ? prettyDate(state.key)
-      : 'Practice round';
-    const sub = $('subtitle');
-    if (state.mode === 'daily') {
-      sub.textContent = `Puzzle #${dayNumber(state.key) + 1} · Find the mystery emoji`;
-    } else {
-      sub.innerHTML = 'Random emoji · doesn’t count toward stats · <button type="button" id="backDaily">Back to daily</button>';
-      $('backDaily').addEventListener('click', startDaily);
-    }
-    $('timer').hidden = !settings.timer;
-    $('timerText').textContent = formatTime(state.elapsed);
-    const left = MAX_HINTS - state.hints;
-    const badge = $('hintBadge');
-    badge.textContent = left;
-    badge.dataset.zero = String(left === 0);
-    $('hintBtn').disabled = left === 0 || !playing();
-  }
-
-  function renderStatus() {
-    const livesEl = $('lives');
-    livesEl.innerHTML = '';
-    for (let i = 0; i < MAX_LIVES; i++) {
-      const d = document.createElement('span');
-      d.className = 'dot' + (i >= state.lives ? ' lost' : '');
-      livesEl.appendChild(d);
-    }
-    livesEl.setAttribute('aria-label', `${state.lives} of ${MAX_LIVES} lives left`);
-    $('qCounter').textContent = `Questions used: ${state.qUsed}/${MAX_QUESTIONS}`;
-  }
-
-  function renderStage() {
     const t = target();
+    const active = playing();
+
+    // Lives + counter
+    $('lives').innerHTML = Array.from({ length: MAX_LIVES }, (_, i) => `<span class="dot${i >= state.lives ? ' lost' : ''}"></span>`).join('');
+    $('lives').setAttribute('aria-label', `${state.lives} of ${MAX_LIVES} lives left`);
+    $('qLeft').textContent = MAX_QUESTIONS - state.used;
+
+    // Mystery tile + caption
     const mystery = $('mystery');
-    const name = $('revealName');
-    const prompt = $('prompt');
-    const ended = !playing();
-
-    mystery.classList.toggle('revealed', ended);
-    mystery.classList.toggle('lost-state', state.status === 'lost');
-
-    if (ended) {
-      mystery.innerHTML = `<span class="emoji">${t.char}</span>`;
-      name.hidden = false;
-      name.textContent = t.name;
-      const qWord = state.qUsed === 1 ? 'question' : 'questions';
-      prompt.textContent = state.status === 'won'
-        ? `Solved in ${state.qUsed} ${qWord}!`
-        : 'Out of lives — the emoji was…';
+    mystery.classList.toggle('won', state.status === 'won');
+    mystery.classList.toggle('lost', state.status === 'lost');
+    mystery.innerHTML = active ? '<span class="q" aria-label="Hidden emoji">?</span>' : `<span class="emoji">${t.char}</span>`;
+    const caption = $('caption');
+    if (state.status === 'won') {
+      caption.innerHTML = `It was <b>${escapeHtml(t.name)}</b> — solved in ${state.used} question${state.used === 1 ? '' : 's'}.`;
+    } else if (state.status === 'lost') {
+      caption.innerHTML = `Out of lives. It was <b>${escapeHtml(t.name)}</b>.`;
+    } else if (!state.log.length) {
+      caption.textContent = 'Ask yes/no questions, then guess the emoji.';
     } else {
-      name.hidden = true;
-      mystery.innerHTML = state.hints >= 3
-        ? `<span class="emoji blurred" aria-label="Blurred preview">${t.char}</span>`
-        : '<span class="q" aria-label="Hidden emoji">?</span>';
-      prompt.textContent = state.qUsed >= MAX_QUESTIONS ? 'No questions left — make your guess.' : 'Find the mystery emoji.';
+      caption.textContent = state.used >= MAX_QUESTIONS ? 'No questions left — make your guess.' : 'What’s the emoji?';
     }
 
-    const slots = $('slots');
-    if (state.hints >= 2 || ended) {
-      slots.hidden = false;
-      slots.innerHTML = '';
-      let firstLetterShown = false;
-      for (const ch of t.name.toUpperCase()) {
-        const s = document.createElement('span');
-        if (ch === ' ') {
-          s.className = 'slot gap';
-        } else if (!/[A-Z0-9]/.test(ch)) {
-          s.className = 'slot filled';
-          s.textContent = ch;
-        } else {
-          const show = ended || !firstLetterShown;
-          firstLetterShown = true;
-          s.className = 'slot' + (show ? ' filled' : '');
-          s.textContent = show ? ch : '';
-        }
-        slots.appendChild(s);
-      }
-      slots.setAttribute('aria-label', ended ? t.name : `Starts with ${t.name[0]}, ${t.name.replace(/[^A-Za-z0-9]/g, '').length} letters`);
-    } else {
-      slots.hidden = true;
-      slots.innerHTML = '';
-    }
-  }
-
-  function renderLog() {
+    // Log
     const log = $('log');
-    $('emptyLog').hidden = state.log.length > 0 || !playing();
     log.innerHTML = state.log.map((e, i) => {
-      let chip, text, ans;
-      if (e.t === 'ask' || (e.t === 'hint' && e.q)) {
-        chip = e.t === 'ask' ? '<span class="chip">ask()</span>' : '<span class="chip hint">hint()</span>';
-        text = escapeHtml(QUESTION_BY_ID[e.q].text);
+      if (e.q) {
         const cls = e.a === 'Yes' ? 'yes' : e.a === 'No' ? 'no' : 'maybe';
-        ans = `<span class="ans ${cls}">${e.a}</span>`;
-      } else if (e.t === 'guess') {
-        chip = '<span class="chip guess">guess()</span>';
-        text = (e.char ? `<span class="emoji">${e.char}</span>` : '') + escapeHtml(e.text) + '?';
-        ans = `<span class="ans ${e.ok ? 'yes' : 'no'}">${e.ok ? 'Yes' : 'No'}</span>`;
-      } else if (e.kind === 'letters') {
-        const t = target();
-        chip = '<span class="chip hint">hint()</span>';
-        text = `Starts with “${escapeHtml(t.name[0].toUpperCase())}” · ${t.name.replace(/[^A-Za-z0-9]/g, '').length} letters`;
-        ans = '<span class="ans info">💡</span>';
-      } else {
-        chip = '<span class="chip hint">hint()</span>';
-        text = 'Blurry peek unlocked';
-        ans = '<span class="ans info">💡</span>';
+        return `<div class="row"><span class="num">${i + 1}</span><span class="chip">ask()</span><span class="text">${escapeHtml(QUESTION_BY_ID[e.q].text)}</span><span class="ans ${cls}">${e.a}</span></div>`;
       }
-      return `<div class="log-row"><span class="log-num">${i + 1}</span>${chip}<span class="log-text">${text}</span>${ans}</div>`;
+      const icon = e.char ? `<span class="emoji">${e.char}</span>` : '';
+      return `<div class="row"><span class="num">${i + 1}</span><span class="chip guess">guess()</span><span class="text">${icon}${escapeHtml(e.guess)}?</span><span class="ans ${e.ok ? 'yes' : 'no'}">${e.ok ? 'Yes' : 'No'}</span></div>`;
     }).join('');
-  }
-
-  function scrollLogToEnd() {
-    const log = $('log');
     requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; });
-  }
 
-  function renderComposer() {
-    const active = playing();
-    const mode = state.inputMode;
+    // Input + buttons
+    $('field').hidden = !active;
+    $('actions').hidden = !active;
+    $('endActions').hidden = active;
     const chip = $('modeChip');
-    chip.dataset.mode = mode;
-    chip.textContent = mode === 'ask' ? 'ask()' : 'guess()';
-    chip.disabled = !active;
-    input.disabled = !active;
-    input.placeholder = !active
-      ? (state.status === 'won' ? 'Solved! Come back tomorrow for a new emoji.' : 'Game over — a new emoji arrives at midnight ET.')
-      : mode === 'ask' ? 'Ask a yes/no question…' : 'Name the emoji…';
-    $('modeBtnLabel').textContent = mode === 'ask' ? 'Guess' : 'Ask';
-    $('modeBtn').disabled = !active;
-    $('shuffleBtn').disabled = !active || settings.hard || mode === 'guess' || state.qUsed >= MAX_QUESTIONS;
-    $('clearBtn').disabled = !active || !input.value;
-    submitBtn.disabled = !active || !input.value.trim();
-  }
+    chip.dataset.mode = state.mode;
+    chip.textContent = state.mode === 'ask' ? 'ask()' : 'guess()';
+    input.placeholder = state.mode === 'ask' ? 'Ask a yes/no question…' : 'Name the emoji…';
+    $('modeBtnLabel').textContent = state.mode === 'ask' ? 'Guess' : 'Ask';
+    $('shuffleBtn').disabled = state.mode === 'guess' || state.used >= MAX_QUESTIONS;
+    $('submitBtn').disabled = !input.value.trim();
 
-  function renderBank() {
+    // Bank
     const bankEl = $('bank');
-    const label = $('bankLabel');
-    const active = playing();
-
-    if (!active) {
-      bankEl.hidden = true;
-      label.textContent = state.status === 'won' ? 'Nicely done! 🎉' : 'Better luck tomorrow.';
-      return;
-    }
-    if (settings.hard) {
-      bankEl.hidden = true;
-      label.textContent = 'Hard mode · question bank hidden';
-      return;
-    }
-    if (state.qUsed >= MAX_QUESTIONS) {
-      bankEl.hidden = true;
-      label.textContent = 'Question bank · empty — guess the emoji';
-      return;
-    }
-    if (state.inputMode === 'guess') {
-      bankEl.hidden = true;
-      label.textContent = 'Guess mode · type the emoji’s name';
-      return;
-    }
-
-    bankEl.hidden = false;
-    label.textContent = `Question bank · ${bank.length} suggestions · ${MAX_QUESTIONS - state.qUsed} questions left`;
     bankEl.innerHTML = '';
-    bank.forEach((qid) => {
-      const b = document.createElement('button');
-      b.className = 'tile' + (selectedBank === qid ? ' selected' : '');
-      b.type = 'button';
-      b.textContent = QUESTION_BY_ID[qid].text;
-      b.addEventListener('click', () => onBankTile(qid));
-      bankEl.appendChild(b);
-    });
-  }
-
-  function onBankTile(qid) {
-    if (!playing()) return;
-    if (selectedBank === qid) {
-      ask(qid);
-      return;
+    if (active && state.mode === 'ask' && state.used < MAX_QUESTIONS) {
+      bank.forEach((qid) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tile' + (selected === qid ? ' selected' : '');
+        b.textContent = QUESTION_BY_ID[qid].text;
+        b.addEventListener('click', () => pickTile(qid));
+        bankEl.appendChild(b);
+      });
     }
-    selectedBank = qid;
-    input.value = QUESTION_BY_ID[qid].text;
-    closeSuggest();
-    renderComposer();
-    renderBank();
+
+    if (!active) $('againBtn').focus();
   }
 
   /* ---------- Autocomplete ---------- */
   function updateSuggest() {
     const text = input.value.trim();
-    if (!playing() || state.inputMode !== 'ask' || !text || selectedBank) { closeSuggest(); return; }
-    if (detectGuessInQuestion(text)) {
-      suggestItems = [];
+    if (!playing() || state.mode !== 'ask' || !text || selected) { closeSuggest(); return; }
+    if (detectGuess(text)) {
+      suggestIds = [];
       suggestActive = -1;
-      suggestEl.innerHTML = '<div class="suggest-head">This will count as a guess() — press Enter to guess.</div>';
+      suggestEl.innerHTML = '<div class="suggest-note">This counts as a guess() — press Enter to guess.</div>';
       suggestEl.hidden = false;
       return;
     }
-    const ranked = rankQuestions(text, { partial: true }).slice(0, 4);
+    const ranked = rankQuestions(text, true).slice(0, 4);
     if (!ranked.length) { closeSuggest(); return; }
     const asked = askedIds();
-    suggestItems = ranked.map((r) => r.q.id);
-    if (suggestActive >= suggestItems.length) suggestActive = -1;
-    suggestEl.innerHTML = '<div class="suggest-head">Matching questions</div>' + ranked.map((r, i) => {
+    suggestIds = ranked.map((r) => r.q.id);
+    if (suggestActive >= suggestIds.length) suggestActive = -1;
+    suggestEl.innerHTML = ranked.map((r, i) => {
       const prev = asked.has(r.q.id) ? state.log.find((e) => e.q === r.q.id) : null;
-      return `<button type="button" class="suggest-item" role="option" data-i="${i}" aria-selected="${i === suggestActive}">
-        <span>${escapeHtml(r.q.text)}</span>${prev ? `<small>asked · ${prev.a}</small>` : ''}</button>`;
+      return `<button type="button" class="suggest-item" role="option" data-i="${i}" aria-selected="${i === suggestActive}"><span>${escapeHtml(r.q.text)}</span>${prev ? `<small>asked · ${prev.a}</small>` : ''}</button>`;
     }).join('');
     suggestEl.hidden = false;
   }
@@ -1601,171 +886,26 @@
   function closeSuggest() {
     suggestEl.hidden = true;
     suggestEl.innerHTML = '';
-    suggestItems = [];
+    suggestIds = [];
     suggestActive = -1;
   }
 
+  /* ---------- Events ---------- */
   suggestEl.addEventListener('mousedown', (ev) => {
     const item = ev.target.closest('.suggest-item');
     if (!item) return;
     ev.preventDefault();
-    const qid = suggestItems[Number(item.dataset.i)];
+    const qid = suggestIds[Number(item.dataset.i)];
     if (qid) ask(qid);
   });
 
-  /* ---------- Toast ---------- */
-  let toastTimer = null;
-  function toast(msg) {
-    const el = $('toast');
-    el.textContent = msg;
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-  }
-
-  /* ---------- Effects ---------- */
-  function shakeMystery() {
-    const m = $('mystery');
-    m.classList.remove('shake');
-    void m.offsetWidth;
-    m.classList.add('shake');
-  }
-
-  function confetti(char) {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const pieces = [char, '🎉', '✨', char, '⭐'];
-    for (let i = 0; i < 28; i++) {
-      const s = document.createElement('span');
-      s.className = 'confetti emoji';
-      s.textContent = pieces[i % pieces.length];
-      s.style.left = Math.random() * 100 + 'vw';
-      s.style.fontSize = 18 + Math.random() * 22 + 'px';
-      s.style.animationDuration = 1.8 + Math.random() * 1.6 + 's';
-      s.style.animationDelay = Math.random() * 0.5 + 's';
-      document.body.appendChild(s);
-      setTimeout(() => s.remove(), 4200);
-    }
-  }
-
-  /* ---------- Modals ---------- */
-  let countdownTimer = null;
-
-  function openModal(id) {
-    if (id === 'settingsModal') renderSettings();
-    if (id === 'resultModal') {
-      if (playing()) return;
-      renderResult();
-    }
-    document.querySelectorAll('.overlay').forEach((o) => { o.hidden = o.id !== id; });
-    const modal = $(id);
-    modal.hidden = false;
-    const focusTarget = modal.querySelector('.btn.primary') || modal.querySelector('[data-close]');
-    if (focusTarget) focusTarget.focus();
-  }
-
-  function closeModals() {
-    document.querySelectorAll('.overlay').forEach((o) => { o.hidden = true; });
-    clearInterval(countdownTimer);
-    if (playing()) input.focus();
-  }
-
-  const anyModalOpen = () => Array.from(document.querySelectorAll('.overlay')).some((o) => !o.hidden);
-
-  document.querySelectorAll('.overlay').forEach((o) => {
-    o.addEventListener('click', (ev) => {
-      if (ev.target === o || ev.target.closest('[data-close]')) closeModals();
-    });
-  });
-
-  function renderSettings() {
-    $('stPlayed').textContent = stats.played;
-    $('stWin').textContent = stats.played ? Math.round((stats.wins / stats.played) * 100) : 0;
-    $('stStreak').textContent = stats.streak;
-    $('stMax').textContent = stats.maxStreak;
-    $('hardSwitch').setAttribute('aria-checked', String(settings.hard));
-    $('timerSwitch').setAttribute('aria-checked', String(settings.timer));
-  }
-
-  function shareSquares() {
-    return state.log.map((e) => {
-      if (e.t === 'guess') return e.ok ? '✅' : '❌';
-      if (e.t === 'hint') return '💡';
-      return e.a === 'Yes' ? '🟩' : e.a === 'No' ? '🟥' : '🟨';
-    }).join('');
-  }
-
-  function shareText() {
-    const head = state.mode === 'daily'
-      ? `Guess the Emoji #${dayNumber(state.key) + 1}`
-      : 'Guess the Emoji (practice)';
-    const result = state.status === 'won'
-      ? `Solved in ${state.qUsed} question${state.qUsed === 1 ? '' : 's'}`
-      : 'Stumped 😵';
-    const wrong = MAX_LIVES - state.lives;
-    const details = [`${wrong} wrong guess${wrong === 1 ? '' : 'es'}`, `${state.hints} hint${state.hints === 1 ? '' : 's'}`];
-    if (settings.timer) details.push(`⏱ ${formatTime(state.elapsed)}`);
-    return `${head}\n${result}${settings.hard ? ' · hard mode' : ''}\n${shareSquares()}\n${details.join(' · ')}\n${location.href.split('#')[0]}`;
-  }
-
-  function renderResult() {
-    const t = target();
-    const won = state.status === 'won';
-    $('resultTitle').textContent = won ? 'You got it!' : 'So close!';
-    $('resultEmoji').textContent = t.char;
-    $('resultName').innerHTML = won
-      ? `It was <b>${escapeHtml(t.name)}</b>.`
-      : `The mystery emoji was <b>${escapeHtml(t.name)}</b>.`;
-    $('rsQuestions').textContent = state.qUsed;
-    $('rsWrong').textContent = MAX_LIVES - state.lives;
-    $('rsHints').textContent = state.hints;
-    $('rsTime').textContent = formatTime(state.elapsed);
-    $('shareGrid').textContent = shareSquares() || '—';
-    const cd = $('countdown');
-    cd.hidden = state.mode !== 'daily';
-    const tick = () => { $('countdownText').textContent = formatTime(secondsToMidnightET()).padStart(8, '0'); };
-    tick();
-    clearInterval(countdownTimer);
-    countdownTimer = setInterval(() => {
-      tick();
-      if (state.mode === 'daily' && state.key !== todayKey()) {
-        clearInterval(countdownTimer);
-        closeModals();
-        startDaily();
-        toast('A new emoji is ready!');
-      }
-    }, 1000);
-  }
-
-  async function copyText(text) {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    } catch (_) { /* fall through */ }
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    let ok = false;
-    try { ok = document.execCommand('copy'); } catch (_) { ok = false; }
-    ta.remove();
-    return ok;
-  }
-
-  /* =========================================================
-     Events
-     ========================================================= */
   input.addEventListener('input', () => {
-    if (selectedBank && input.value !== QUESTION_BY_ID[selectedBank].text) {
-      selectedBank = null;
-      renderBank();
+    if (selected && input.value !== QUESTION_BY_ID[selected].text) {
+      selected = null;
+      render();
     }
     suggestActive = -1;
-    renderComposer();
+    $('submitBtn').disabled = !input.value.trim();
     updateSuggest();
   });
 
@@ -1773,109 +913,35 @@
     if (ev.key === 'Enter') {
       ev.preventDefault();
       submit();
-    } else if (ev.key === 'ArrowDown' && suggestItems.length) {
+    } else if (ev.key === 'ArrowDown' && suggestIds.length) {
       ev.preventDefault();
-      suggestActive = (suggestActive + 1) % suggestItems.length;
+      suggestActive = (suggestActive + 1) % suggestIds.length;
       updateSuggest();
-    } else if (ev.key === 'ArrowUp' && suggestItems.length) {
+    } else if (ev.key === 'ArrowUp' && suggestIds.length) {
       ev.preventDefault();
-      suggestActive = suggestActive <= 0 ? suggestItems.length - 1 : suggestActive - 1;
+      suggestActive = suggestActive <= 0 ? suggestIds.length - 1 : suggestActive - 1;
       updateSuggest();
     } else if (ev.key === 'Escape') {
       if (!suggestEl.hidden) closeSuggest();
-      else clearInput();
+      else { input.value = ''; selected = null; render(); }
     }
   });
 
   input.addEventListener('blur', () => setTimeout(closeSuggest, 120));
   input.addEventListener('focus', updateSuggest);
 
-  $('modeChip').addEventListener('click', () => setInputMode(state.inputMode === 'ask' ? 'guess' : 'ask'));
-  $('modeBtn').addEventListener('click', () => setInputMode(state.inputMode === 'ask' ? 'guess' : 'ask'));
-  $('clearBtn').addEventListener('click', () => { clearInput(); renderBank(); input.focus(); });
-  $('shuffleBtn').addEventListener('click', () => { dealBank(); renderBank(); });
-  submitBtn.addEventListener('click', submit);
-  $('hintBtn').addEventListener('click', useHint);
-  $('helpBtn').addEventListener('click', () => openModal('helpModal'));
-  $('settingsBtn').addEventListener('click', () => openModal('settingsModal'));
-  $('statsBtn').addEventListener('click', () => (playing() ? openModal('settingsModal') : openModal('resultModal')));
-
-  $('hardSwitch').addEventListener('click', () => {
-    settings.hard = !settings.hard;
-    save(STORE.settings, settings);
-    renderSettings();
-    render();
-  });
-  $('timerSwitch').addEventListener('click', () => {
-    settings.timer = !settings.timer;
-    save(STORE.settings, settings);
-    renderSettings();
-    renderHeader();
-  });
-  $('practiceBtn').addEventListener('click', () => { closeModals(); startPractice(); });
-  $('againBtn').addEventListener('click', () => { closeModals(); startPractice(); });
-  $('resetStatsBtn').addEventListener('click', () => {
-    if (!confirm('Reset all statistics? This cannot be undone.')) return;
-    stats = Object.assign({}, DEFAULT_STATS);
-    save(STORE.stats, stats);
-    renderSettings();
-    toast('Statistics reset.');
-  });
-  $('shareBtn').addEventListener('click', async () => {
-    const ok = await copyText(shareText());
-    toast(ok ? 'Result copied to clipboard!' : 'Couldn’t copy — try again.');
-  });
-  document.querySelector('.brand').addEventListener('click', (ev) => {
-    ev.preventDefault();
-    if (state.mode !== 'daily') startDaily();
-  });
+  $('modeChip').addEventListener('click', () => setMode(state.mode === 'ask' ? 'guess' : 'ask'));
+  $('modeBtn').addEventListener('click', () => setMode(state.mode === 'ask' ? 'guess' : 'ask'));
+  $('shuffleBtn').addEventListener('click', () => { dealBank(); render(); });
+  $('submitBtn').addEventListener('click', submit);
+  $('againBtn').addEventListener('click', newGame);
 
   document.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape' && anyModalOpen()) { closeModals(); return; }
-    if (anyModalOpen() || ev.metaKey || ev.ctrlKey || ev.altKey) return;
-    if (document.activeElement === input || !playing()) return;
-    if (ev.key.length === 1 && /\S/.test(ev.key) && !(document.activeElement && document.activeElement.tagName === 'BUTTON' && ev.key === ' ')) {
-      input.focus();
-    }
+    if (ev.metaKey || ev.ctrlKey || ev.altKey || document.activeElement === input || !playing()) return;
+    if (ev.key.length === 1 && /\S/.test(ev.key)) input.focus();
   });
 
-  /* ---------- Timer ---------- */
-  let tickCount = 0;
-  setInterval(() => {
-    if (!state || !playing() || document.hidden) return;
-    state.elapsed++;
-    $('timerText').textContent = formatTime(state.elapsed);
-    if (++tickCount % 5 === 0) persist();
-  }, 1000);
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { persist(); return; }
-    if (state && state.mode === 'daily' && state.key !== todayKey() && !anyModalOpen()) {
-      startDaily();
-      toast('A new emoji is ready!');
-    }
-  });
-  window.addEventListener('pagehide', persist);
-
-  /* =========================================================
-     Boot
-     ========================================================= */
-  function afterStateChange(initial) {
-    input.value = '';
-    closeSuggest();
-    dealBank();
-    render();
-    scrollLogToEnd();
-    if (initial && !playing()) setTimeout(() => openModal('resultModal'), 350);
-  }
-
-  startDaily();
-  if (!load(STORE.seenHelp, false)) {
-    save(STORE.seenHelp, true);
-    openModal('helpModal');
-  } else if (playing()) {
-    input.focus();
-  }
+  newGame();
 })();
 </script>
 </body>
